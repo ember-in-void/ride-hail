@@ -1,0 +1,2 @@
+websocket:
+  port: ${WS_PORT:-8080}

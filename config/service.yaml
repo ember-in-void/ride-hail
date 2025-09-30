@@ -1,0 +1,4 @@
+services:
+  ride_service: ${RIDE_SERVICE_PORT:-3000}
+  driver_location_service: ${DRIVER_LOCATION_SERVICE_PORT:-3001}
+  admin_service: ${ADMIN_SERVICE_PORT:-3004}
