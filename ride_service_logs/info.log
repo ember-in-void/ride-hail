@@ -1,0 +1,546 @@
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:17",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-11 21:06:34"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:66",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-11 21:06:34",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:17",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-11 21:08:59"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:66",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-11 21:08:59",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:17",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-11 21:09:38"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:66",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-11 21:09:38",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:19",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-11 21:30:33"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:68",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-11 21:30:33",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/handler.go:90",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-11 21:30:33"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:19",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-11 21:32:02"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:68",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-11 21:32:02",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/handler.go:90",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-11 21:32:02"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:19",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-11 21:44:00"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:68",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-11 21:44:00",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/handler.go:90",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-11 21:44:00"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:19",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-12 04:56:03"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:68",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-12 04:56:03",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/handler.go:92",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-12 04:56:03"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:19",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-12 04:57:57"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:68",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-12 04:57:57",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/handler.go:92",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-12 04:57:57"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:20",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-13 03:44:04"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:69",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-13 03:44:04",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/adapter/inbound/handler.go:94",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-13 03:44:04"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:20",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-13 03:44:20"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:69",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-13 03:44:20",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/adapter/inbound/handler.go:94",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-13 03:44:20"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:21",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-18 16:35:53"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:70",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-18 16:35:53",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/adapter/inbound/handler.go:94",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-18 16:35:53"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:21",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-23 16:58:33"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:70",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-23 16:58:33",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/adapter/inbound/handler.go:94",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-23 16:58:33"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:21",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-23 17:03:42"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:70",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-23 17:03:42",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/adapter/inbound/handler.go:94",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-23 17:03:42"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:21",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-23 17:08:05"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:70",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-23 17:08:05",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/adapter/inbound/handler.go:94",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-23 17:08:05"
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:21",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride service Logger",
+  "service": "ride-service",
+  "status": "Initialized",
+  "timestamp": "2025-10-23 17:43:28"
+}
+{
+  "JWT_exp": 60,
+  "Services": {
+    "RideServicePort": 3000,
+    "DriverLocationServicePort": 3001,
+    "AdminServicePort": 3004
+  },
+  "caller": "/home/adam/jahn/ride-hail/cmd/ride-service/main.go:70",
+  "db_host": "localhost",
+  "db_name": "ridehail_db",
+  "db_port": 5432,
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Configurations loaded",
+  "mq_host": "localhost",
+  "mq_port": 5672,
+  "service": "ride-service",
+  "status": "success",
+  "timestamp": "2025-10-23 17:43:28",
+  "ws_port": 8080
+}
+{
+  "caller": "/home/adam/jahn/ride-hail/internal/ride/adapter/inbound/handler.go:94",
+  "hostname": "yerkanbey",
+  "level": "info",
+  "message": "Ride routes registered",
+  "service": "ride-service",
+  "timestamp": "2025-10-23 17:43:28"
+}

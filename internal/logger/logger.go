@@ -123,7 +123,17 @@ func (l *Logger) Error(msg string, fields map[string]any) {
 	l.log(LevelError, "error", msg, fields)
 }
 
-// WithFields возвращает лёгкую обёртку, которая добавляет базовые поля.
+// WithFields создаёт "дочерний" логгер с дополнительными полями,
+// которые будут автоматически добавляться ко всем логам.
+//
+// Например:
+//
+//	reqLogger := log.WithFields(map[string]any{"request_id": "abc123"})
+//	reqLogger.Info("Ride created", map[string]any{"ride_id": "ride42"})
+//
+// В результате в JSON появятся оба поля — "request_id" и "ride_id".
+// Это удобно, когда нужно, чтобы все логи одного запроса имели общий контекст
+// (например, request_id, user_id, ride_id и т.д.).
 func (l *Logger) WithFields(base map[string]any) *entryLogger {
 	return &entryLogger{parent: l, base: base}
 }
@@ -168,14 +178,14 @@ func (l *Logger) log(level Level, levelStr, msg string, fields map[string]any) {
 	}
 
 	entry := make(map[string]any, 8)
-	entry["timestamp"] = time.Now().UTC().Format(time.RFC3339Nano)
+	entry["timestamp"] = time.Now().Local().Format("2006-01-02 15:04:05")
 	entry["level"] = levelStr
 	entry["service"] = l.service
 	entry["message"] = msg
 	entry["hostname"] = l.hostname
 
 	// caller
-	_, file, line, ok := runtime.Caller(3) // 3 — чтобы захватить внешний вызов
+	_, file, line, ok := runtime.Caller(2) // 2 — чтобы захватить внешний вызов
 	if ok {
 		entry["caller"] = fmt.Sprintf("%s:%d", file, line)
 	} else {
@@ -187,13 +197,13 @@ func (l *Logger) log(level Level, levelStr, msg string, fields map[string]any) {
 		entry[k] = v
 	}
 
-	b, err := json.Marshal(entry)
+	b, err := json.MarshalIndent(entry, "", "  ")
 	if err != nil {
 		// fallback: plain text to errWriter
 		l.mu.Lock()
 		defer l.mu.Unlock()
 		fmt.Fprintf(l.errWriter, `{"timestamp":"%s","level":"error","service":"%s","message":"failed to marshal log: %v"}`+"\n",
-			time.Now().UTC().Format(time.RFC3339Nano), l.service, err)
+			time.Now().UTC().Format(time.Now().Format("2006-01-02 15:04:05")), l.service, err)
 		return
 	}
 
