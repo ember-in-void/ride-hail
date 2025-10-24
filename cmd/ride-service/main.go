@@ -4,7 +4,11 @@ import (
 	"log"
 
 	"ridehail/internal/config"
+	"ridehail/internal/db_conn"
 	"ridehail/internal/logger"
+	"ridehail/internal/ride/adapter/inbound"
+	"ridehail/internal/ride/adapter/outbound/ride_repo"
+	"ridehail/internal/ride/app/service"
 )
 
 func main() {
@@ -27,7 +31,7 @@ func main() {
 		return
 	}
 
-	cfgMQ, err := config.LoadRabbitConfig("./config/rabbitmq.yaml")
+	cfgMQ, err := config.LoadRabbitConfig("./config/mq.yaml")
 	if err != nil {
 		logger.Error("LoadRabbitConfig", map[string]any{
 			"error":  err.Error(),
@@ -36,7 +40,7 @@ func main() {
 		return
 	}
 
-	cfgServices, err := config.LoadServicesConfig("./config/services.yaml")
+	cfgServices, err := config.LoadServicesConfig("./config/service.yaml")
 	if err != nil {
 		logger.Error("LoadServicesConfig", map[string]any{
 			"error":  err.Error(),
@@ -74,4 +78,26 @@ func main() {
 		"Services": cfgServices,
 		"status":   "success",
 	})
+
+	openDB, err := db_conn.OpenDB(*cfgDB)
+	if err != nil {
+		logger.Error("Error while open DB", map[string]any{
+			"error":  err.Error(),
+			"status": "failed",
+		})
+	}
+	postgreDB := ride_repo.NewRideRepo(openDB, logger)
+	defer postgreDB.Close()
+
+	svc := service.NewService(postgreDB, logger)
+
+	server := inbound.NewHTTPServer(svc, cfgServices.RideServicePort, logger)
+
+	if err := server.Serve(); err != nil {
+		logger.Error("Ride service server failed", map[string]any{
+			"error":  err.Error(),
+			"status": "failed",
+		})
+		return
+	}
 }
