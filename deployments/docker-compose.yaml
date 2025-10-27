@@ -1,4 +1,47 @@
 services:
+  ride:
+    build: ..
+    command: ["./ride-hail-system", "-service=ride"]
+    environment:
+      DB_HOST: postgres
+      DB_USER: ridehail_user
+      DB_PASSWORD: ridehail_pass
+      DB_NAME: ridehail_db
+      DB_SSLMODE: disable
+      RABBITMQ_HOST: rabbitmq
+      RIDE_SERVICE_PORT: 3000
+      WS_PORT: 8080
+    ports: ["3000:3000", "8080:8080"]
+    depends_on: [postgres, rabbitmq]
+
+  driver:
+    build: ..
+    command: ["./ride-hail-system", "-service=driver"]
+    environment:
+      DB_HOST: postgres
+      DB_USER: ridehail_user
+      DB_PASSWORD: ridehail_pass
+      DB_NAME: ridehail_db
+      DB_SSLMODE: disable
+      RABBITMQ_HOST: rabbitmq
+      DRIVER_LOCATION_SERVICE_PORT: 3001
+    ports: ["3001:3001"]
+    depends_on: [postgres, rabbitmq]
+
+  admin:
+    build: ..
+    command: ["./ride-hail-system", "-service=admin"]
+    environment:
+      DB_HOST: postgres
+      DB_USER: ridehail_user
+      DB_PASSWORD: ridehail_pass
+      DB_NAME: ridehail_db
+      DB_SSLMODE: disable
+      RABBITMQ_HOST: rabbitmq
+      ADMIN_SERVICE_PORT: 3004
+    ports: ["3004:3004"]
+    depends_on: [postgres, rabbitmq]
+    
   postgres:
     image: postgres:15-alpine
     container_name: postgres

@@ -1,0 +1,20 @@
+package transport
+
+import (
+	"net/http"
+	"ridehail/internal/logger"
+)
+
+func newRouter(svc ServiceInterface, logger *logger.Logger) *http.ServeMux {
+	router := http.NewServeMux()
+	Routes(router, svc, logger)
+	return router
+}
+
+func Routes(router *http.ServeMux, svc ServiceInterface, logger *logger.Logger) {
+	h := NewHandler(svc, logger)
+	router.HandleFunc("GET /admin/overview", h.)
+	router.HandleFunc("GET /admin/rides/active", h.)
+
+	logger.Info("Admin routes registered", nil)
+}
