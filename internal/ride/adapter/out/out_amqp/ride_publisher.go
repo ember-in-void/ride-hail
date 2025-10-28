@@ -1,1 +1,1 @@
-package outamqp
+package out_amqp
