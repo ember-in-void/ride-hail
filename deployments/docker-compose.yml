@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgis/postgis:16-3.4
@@ -13,6 +15,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+      start_period: 10s
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -28,10 +31,11 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 5s
       timeout: 3s
-      retries: 20
+      retries: 30
+      start_period: 40s
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
     networks:
@@ -59,7 +63,13 @@ services:
       - "8080:8080"
     networks:
       - ridehail-network
-    restart: unless-stopped
+    restart: on-failure:3
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   app-driver:
     build:
@@ -82,7 +92,13 @@ services:
       - "3001:3001"
     networks:
       - ridehail-network
-    restart: unless-stopped
+    restart: on-failure:3
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   app-admin:
     build:
@@ -105,7 +121,13 @@ services:
       - "3004:3004"
     networks:
       - ridehail-network
-    restart: unless-stopped
+    restart: on-failure:3
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 volumes:
   pgdata:
