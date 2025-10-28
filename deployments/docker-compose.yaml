@@ -1,60 +1,102 @@
 services:
-  ride:
-    build: ..
-    command: ["./ride-hail-system", "-service=ride"]
-    environment:
-      DB_HOST: postgres
-      DB_USER: ridehail_user
-      DB_PASSWORD: ridehail_pass
-      DB_NAME: ridehail_db
-      DB_SSLMODE: disable
-      RABBITMQ_HOST: rabbitmq
-      RIDE_SERVICE_PORT: 3000
-      WS_PORT: 8080
-    ports: ["3000:3000", "8080:8080"]
-    depends_on: [postgres, rabbitmq]
-
-  driver:
-    build: ..
-    command: ["./ride-hail-system", "-service=driver"]
-    environment:
-      DB_HOST: postgres
-      DB_USER: ridehail_user
-      DB_PASSWORD: ridehail_pass
-      DB_NAME: ridehail_db
-      DB_SSLMODE: disable
-      RABBITMQ_HOST: rabbitmq
-      DRIVER_LOCATION_SERVICE_PORT: 3001
-    ports: ["3001:3001"]
-    depends_on: [postgres, rabbitmq]
-
-  admin:
-    build: ..
-    command: ["./ride-hail-system", "-service=admin"]
-    environment:
-      DB_HOST: postgres
-      DB_USER: ridehail_user
-      DB_PASSWORD: ridehail_pass
-      DB_NAME: ridehail_db
-      DB_SSLMODE: disable
-      RABBITMQ_HOST: rabbitmq
-      ADMIN_SERVICE_PORT: 3004
-    ports: ["3004:3004"]
-    depends_on: [postgres, rabbitmq]
-    
   postgres:
-    image: postgres:15-alpine
-    container_name: postgres
-    restart: unless-stopped
+    image: postgis/postgis:16-3.4
+    container_name: ridehail-postgres
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: ridehail_db
+      POSTGRES_USER: ridehail_user
+      POSTGRES_PASSWORD: ridehail_pass
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ridehail_user -d ridehail_db -h 127.0.0.1 -p 5432"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     volumes:
-      - db_data:/var/lib/postgresql/data
-      - ../migrations/init.sql:/docker-entrypoint-initdb.d/init.sql  
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ridehail-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+
+  app-ride:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: ridehail-ride
+    command: ["./ride-hail-system", "-service=ride"]
+    environment:
+      CONFIG_DIR: /app/config
+    volumes:
+      - ../config/db.yaml:/app/config/db.yaml:ro
+      - ../config/mq.yaml:/app/config/mq.yaml:ro
+      - ../config/service.yaml:/app/config/service.yaml:ro
+      - ../config/ws.yaml:/app/config/ws.yaml:ro
+      - ../config/jwt.yaml:/app/config/jwt.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+
+  app-driver:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: ridehail-driver
+    command: ["./ride-hail-system", "-service=driver"]
+    environment:
+      CONFIG_DIR: /app/config
+    volumes:
+      - ../config/db.yaml:/app/config/db.yaml:ro
+      - ../config/mq.yaml:/app/config/mq.yaml:ro
+      - ../config/service.yaml:/app/config/service.yaml:ro
+      - ../config/ws.yaml:/app/config/ws.yaml:ro
+      - ../config/jwt.yaml:/app/config/jwt.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+
+  app-admin:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: ridehail-admin
+    command: ["./ride-hail-system", "-service=admin"]
+    environment:
+      CONFIG_DIR: /app/config
+    volumes:
+      - ../config/db.yaml:/app/config/db.yaml:ro
+      - ../config/mq.yaml:/app/config/mq.yaml:ro
+      - ../config/service.yaml:/app/config/service.yaml:ro
+      - ../config/ws.yaml:/app/config/ws.yaml:ro
+      - ../config/jwt.yaml:/app/config/jwt.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "3004:3004"
 
 volumes:
-  db_data:
+  pgdata:
+  rabbitmqdata:
