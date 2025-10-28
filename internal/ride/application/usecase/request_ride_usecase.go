@@ -9,7 +9,7 @@ import (
 	"ridehail/internal/ride/application/ports/in"
 	"ridehail/internal/ride/application/ports/out"
 	"ridehail/internal/ride/domain"
-	"ridehail/internal/shared/constants"
+	constants "ridehail/internal/shared/const"
 	"ridehail/internal/shared/logger"
 
 	"github.com/google/uuid"
