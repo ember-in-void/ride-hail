@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgis/postgis:16-3.4
@@ -9,16 +11,21 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ridehail_user -d ridehail_db -h 127.0.0.1 -p 5432"]
+      test: ["CMD-SHELL", "pg_isready -U ridehail_user -d ridehail_db"]
       interval: 5s
       timeout: 3s
       retries: 20
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - ridehail-network
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: ridehail-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -29,17 +36,21 @@ services:
       retries: 20
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
+    networks:
+      - ridehail-network
 
   app-ride:
     build:
       context: ..
-      dockerfile: deployments/Dockerfile  # ✅ ИСПРАВЛЕНО
+      dockerfile: deployments/Dockerfile
     container_name: ridehail-ride
     command: ["./ride-hail-system", "-service=ride"]
     environment:
       CONFIG_DIR: /app/config
+      DB_HOST: postgres
+      RABBITMQ_HOST: rabbitmq
     volumes:
-      - ../config:/app/config:ro  # ✅ Монтируем всю папку
+      - ../config:/app/config:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -48,15 +59,20 @@ services:
     ports:
       - "3000:3000"
       - "8080:8080"
+    networks:
+      - ridehail-network
+    restart: unless-stopped
 
   app-driver:
     build:
       context: ..
-      dockerfile: deployments/Dockerfile  # ✅ ИСПРАВЛЕНО
+      dockerfile: deployments/Dockerfile
     container_name: ridehail-driver
     command: ["./ride-hail-system", "-service=driver"]
     environment:
       CONFIG_DIR: /app/config
+      DB_HOST: postgres
+      RABBITMQ_HOST: rabbitmq
     volumes:
       - ../config:/app/config:ro
     depends_on:
@@ -66,15 +82,20 @@ services:
         condition: service_healthy
     ports:
       - "3001:3001"
+    networks:
+      - ridehail-network
+    restart: unless-stopped
 
   app-admin:
     build:
       context: ..
-      dockerfile: deployments/Dockerfile  # ✅ ИСПРАВЛЕНО
+      dockerfile: deployments/Dockerfile
     container_name: ridehail-admin
     command: ["./ride-hail-system", "-service=admin"]
     environment:
       CONFIG_DIR: /app/config
+      DB_HOST: postgres
+      RABBITMQ_HOST: rabbitmq
     volumes:
       - ../config:/app/config:ro
     depends_on:
@@ -84,7 +105,14 @@ services:
         condition: service_healthy
     ports:
       - "3004:3004"
+    networks:
+      - ridehail-network
+    restart: unless-stopped
 
 volumes:
   pgdata:
   rabbitmqdata:
+
+networks:
+  ridehail-network:
+    driver: bridge
