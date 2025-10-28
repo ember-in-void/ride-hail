@@ -22,7 +22,7 @@ type RabbitMQ struct {
 	closed bool
 }
 
-// NewRabbitMQ создает подключение к RabbitMQ
+// NewRabbitMQ создает подключение к RabbitMQ с retry
 func NewRabbitMQ(ctx context.Context, cfg config.MQConfig, log *logger.Logger) (*RabbitMQ, error) {
 	url := cfg.AMQPURL()
 
@@ -31,16 +31,61 @@ func NewRabbitMQ(ctx context.Context, cfg config.MQConfig, log *logger.Logger) (
 		log: log,
 	}
 
-	if err := mq.connect(ctx); err != nil {
-		return nil, err
+	// Retry логика: максимум 10 попыток с экспоненциальной задержкой
+	maxRetries := 10
+	retryDelay := 1 * time.Second
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		log.Info(logger.Entry{
+			Action:  "rabbitmq_connection_attempt",
+			Message: fmt.Sprintf("attempt %d/%d", attempt, maxRetries),
+			Additional: map[string]any{
+				"host": cfg.Host,
+				"port": cfg.Port,
+			},
+		})
+
+		if err := mq.connect(ctx); err != nil {
+			log.Error(logger.Entry{
+				Action:  "rabbitmq_connection_attempt_failed",
+				Message: err.Error(),
+				Error:   &logger.ErrObj{Msg: err.Error()},
+				Additional: map[string]any{
+					"attempt":      attempt,
+					"max_retries":  maxRetries,
+					"retry_in_sec": retryDelay.Seconds(),
+				},
+			})
+
+			if attempt == maxRetries {
+				return nil, fmt.Errorf("failed to connect after %d attempts: %w", maxRetries, err)
+			}
+
+			// Экспоненциальная задержка с jitter
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(retryDelay):
+				retryDelay = time.Duration(float64(retryDelay) * 1.5)
+				if retryDelay > 30*time.Second {
+					retryDelay = 30 * time.Second
+				}
+			}
+			continue
+		}
+
+		log.Info(logger.Entry{
+			Action:  "rabbitmq_connected",
+			Message: fmt.Sprintf("connected to %s:%d", cfg.Host, cfg.Port),
+			Additional: map[string]any{
+				"attempt": attempt,
+			},
+		})
+
+		return mq, nil
 	}
 
-	log.Info(logger.Entry{
-		Action:  "rabbitmq_connected",
-		Message: fmt.Sprintf("connected to %s:%d", cfg.Host, cfg.Port),
-	})
-
-	return mq, nil
+	return nil, fmt.Errorf("unexpected error: retry loop completed without success")
 }
 
 func (mq *RabbitMQ) connect(ctx context.Context) error {
