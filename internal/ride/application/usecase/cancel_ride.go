@@ -15,13 +15,8 @@ type ServiceInterface interface {
 	CancelRide(rideID string, userID string) error
 }
 
-func NewService(repo ride_repo_ports.RideRepoInterface, logger *logger.Logger) *Service {
+func NewService(repo, logger *logger.Logger) *Service {
 	return &Service{repo: repo, logger: logger}
-}
-
-func (s *Service) CreateRide(passengerID string, req domain.RideRequest) (domain.Ride, error) {
-	// Логика создания поездки
-	return domain.Ride{}, nil
 }
 
 func (s *Service) CancelRide(rideID string, userID string) error {

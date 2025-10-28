@@ -2,13 +2,14 @@ package config
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
 
-// Полная конфигурация проекта
+// Config — полная конфигурация проекта
 type Config struct {
 	Database  DBConfig
 	RabbitMQ  MQConfig
@@ -23,7 +24,7 @@ type DBConfig struct {
 	User     string
 	Password string
 	Database string
-	SSLMode  string // DB_SSLMODE (disable по умолчанию)
+	SSLMode  string
 }
 
 type MQConfig struct {
@@ -31,7 +32,7 @@ type MQConfig struct {
 	Port     int
 	User     string
 	Password string
-	VHost    string // RABBITMQ_VHOST ("/" по умолчанию)
+	VHost    string
 }
 
 type WSConfig struct {
@@ -45,161 +46,221 @@ type ServicesConfig struct {
 }
 
 type JWTConfig struct {
-	PassengerSecret string
-	DriverSecret    string
-	AdminSecret     string
+	Secret        string
+	ExpiryMinutes int
 }
 
-// Load — чисто из ENV (простой, безопасный дефолт)
+// Load — загрузка из CONFIG_DIR (по умолчанию ./config) + ENV перекрывает
 func Load() Config {
-	return mergeConfig(nil)
-}
-
-// LoadFrom — YAML (если указан) + ENV перекрывает YAML
-// Поддерживает простую YAML-структуру по ТЗ.
-// Внутри не используется никаких внешних либ.
-func LoadFrom(path string) (Config, error) {
-	kv := map[string]map[string]string{} // section -> key -> value
-	if path != "" {
-		if err := parseSimpleYAML(path, kv); err != nil {
-			return Config{}, err
-		}
-	}
-	cfg := mergeConfig(kv)
-	return cfg, nil
-}
-
-// mergeConfig: приоритет ENV > YAML > defaults
-func mergeConfig(yaml map[string]map[string]string) Config {
-	// Helpers to get values with precedence
-	getStr := func(envKey, section, key, def string) string {
-		if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
-			return v
-		}
-		if yaml != nil {
-			if sec, ok := yaml[section]; ok {
-				if v, ok := sec[key]; ok && v != "" {
-					return v
-				}
-			}
-		}
-		return def
-	}
-	getInt := func(envKey, section, key string, def int) int {
-		if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
-			if n, err := strconv.Atoi(v); err == nil {
-				return n
-			}
-		}
-		if yaml != nil {
-			if sec, ok := yaml[section]; ok {
-				if v, ok := sec[key]; ok && v != "" {
-					if n, err := strconv.Atoi(v); err == nil {
-						return n
-					}
-				}
-			}
-		}
-		return def
-	}
-
+	configDir := getEnv("CONFIG_DIR", "./config")
 	cfg := Config{}
 
-	// Database
-	cfg.Database.Host = getStr("DB_HOST", "database", "host", "localhost")
-	cfg.Database.Port = getInt("DB_PORT", "database", "port", 5432)
-	cfg.Database.User = getStr("DB_USER", "database", "user", "ridehail_user")
-	cfg.Database.Password = getStr("DB_PASSWORD", "database", "password", "ridehail_pass")
-	cfg.Database.Database = getStr("DB_NAME", "database", "database", "ridehail_db")
-	cfg.Database.SSLMode = getStr("DB_SSLMODE", "database", "sslmode", "disable")
+	// Загружаем db.yaml
+	dbPath := filepath.Join(configDir, "db.yaml")
+	if dbKV, err := parseYAML(dbPath); err == nil {
+		cfg.Database.Host = getStrWithEnv("DB_HOST", dbKV, "host", "localhost")
+		cfg.Database.Port = getIntWithEnv("DB_PORT", dbKV, "port", 5432)
+		cfg.Database.User = getStrWithEnv("DB_USER", dbKV, "user", "ridehail_user")
+		cfg.Database.Password = getStrWithEnv("DB_PASSWORD", dbKV, "password", "ridehail_pass")
+		cfg.Database.Database = getStrWithEnv("DB_NAME", dbKV, "database", "ridehail_db")
+		cfg.Database.SSLMode = getStrWithEnv("DB_SSLMODE", dbKV, "sslmode", "disable")
+	} else {
+		// fallback to defaults + env
+		cfg.Database.Host = getEnv("DB_HOST", "localhost")
+		cfg.Database.Port = getEnvInt("DB_PORT", 5432)
+		cfg.Database.User = getEnv("DB_USER", "ridehail_user")
+		cfg.Database.Password = getEnv("DB_PASSWORD", "ridehail_pass")
+		cfg.Database.Database = getEnv("DB_NAME", "ridehail_db")
+		cfg.Database.SSLMode = getEnv("DB_SSLMODE", "disable")
+	}
 
-	// RabbitMQ
-	cfg.RabbitMQ.Host = getStr("RABBITMQ_HOST", "rabbitmq", "host", "localhost")
-	cfg.RabbitMQ.Port = getInt("RABBITMQ_PORT", "rabbitmq", "port", 5672)
-	cfg.RabbitMQ.User = getStr("RABBITMQ_USER", "rabbitmq", "user", "guest")
-	cfg.RabbitMQ.Password = getStr("RABBITMQ_PASSWORD", "rabbitmq", "password", "guest")
-	cfg.RabbitMQ.VHost = getStr("RABBITMQ_VHOST", "rabbitmq", "vhost", "/")
+	// mq.yaml
+	mqPath := filepath.Join(configDir, "mq.yaml")
+	if mqKV, err := parseYAML(mqPath); err == nil {
+		cfg.RabbitMQ.Host = getStrWithEnv("RABBITMQ_HOST", mqKV, "host", "localhost")
+		cfg.RabbitMQ.Port = getIntWithEnv("RABBITMQ_PORT", mqKV, "port", 5672)
+		cfg.RabbitMQ.User = getStrWithEnv("RABBITMQ_USER", mqKV, "user", "guest")
+		cfg.RabbitMQ.Password = getStrWithEnv("RABBITMQ_PASSWORD", mqKV, "password", "guest")
+		cfg.RabbitMQ.VHost = getStrWithEnv("RABBITMQ_VHOST", mqKV, "vhost", "/")
+	} else {
+		cfg.RabbitMQ.Host = getEnv("RABBITMQ_HOST", "localhost")
+		cfg.RabbitMQ.Port = getEnvInt("RABBITMQ_PORT", 5672)
+		cfg.RabbitMQ.User = getEnv("RABBITMQ_USER", "guest")
+		cfg.RabbitMQ.Password = getEnv("RABBITMQ_PASSWORD", "guest")
+		cfg.RabbitMQ.VHost = getEnv("RABBITMQ_VHOST", "/")
+	}
 
-	// WebSocket
-	cfg.WebSocket.Port = getInt("WS_PORT", "websocket", "port", 8080)
+	// ws.yaml
+	wsPath := filepath.Join(configDir, "ws.yaml")
+	if wsKV, err := parseYAML(wsPath); err == nil {
+		cfg.WebSocket.Port = getIntWithEnv("WS_PORT", wsKV, "port", 8080)
+	} else {
+		cfg.WebSocket.Port = getEnvInt("WS_PORT", 8080)
+	}
 
-	// Services
-	cfg.Services.RideServicePort = getInt("RIDE_SERVICE_PORT", "services", "ride_service", 3000)
-	cfg.Services.DriverLocationServicePort = getInt("DRIVER_LOCATION_SERVICE_PORT", "services", "driver_location_service", 3001)
-	cfg.Services.AdminServicePort = getInt("ADMIN_SERVICE_PORT", "services", "admin_service", 3004)
+	// service.yaml
+	svcPath := filepath.Join(configDir, "service.yaml")
+	if svcKV, err := parseYAML(svcPath); err == nil {
+		cfg.Services.RideServicePort = getIntWithEnv("RIDE_SERVICE_PORT", svcKV, "ride_service", 3000)
+		cfg.Services.DriverLocationServicePort = getIntWithEnv("DRIVER_LOCATION_SERVICE_PORT", svcKV, "driver_location_service", 3001)
+		cfg.Services.AdminServicePort = getIntWithEnv("ADMIN_SERVICE_PORT", svcKV, "admin_service", 3004)
+	} else {
+		cfg.Services.RideServicePort = getEnvInt("RIDE_SERVICE_PORT", 3000)
+		cfg.Services.DriverLocationServicePort = getEnvInt("DRIVER_LOCATION_SERVICE_PORT", 3001)
+		cfg.Services.AdminServicePort = getEnvInt("ADMIN_SERVICE_PORT", 3004)
+	}
 
-	// JWT (три секрета по ролям)
-	cfg.JWT.PassengerSecret = getStr("JWT_PASSENGER_SECRET", "jwt", "passenger_secret", "passenger_secret")
-	cfg.JWT.DriverSecret = getStr("JWT_DRIVER_SECRET", "jwt", "driver_secret", "driver_secret")
-	cfg.JWT.AdminSecret = getStr("JWT_ADMIN_SECRET", "jwt", "admin_secret", "admin_secret")
+	// jwt.yaml
+	jwtPath := filepath.Join(configDir, "jwt.yaml")
+	if jwtKV, err := parseYAML(jwtPath); err == nil {
+		// пробуем сначала секцию jwt.secret и jwt.expiry_minutes
+		if sec, ok := jwtKV["jwt"]; ok {
+			cfg.JWT.Secret = getStrWithEnvNested("JWT_SECRET", sec, "secret", "dev_secret")
+			cfg.JWT.ExpiryMinutes = getIntWithEnvNested("JWT_EXPIRY_MINUTES", sec, "expiry_minutes", 60)
+		} else {
+			// плоская структура
+			cfg.JWT.Secret = getStrWithEnv("JWT_SECRET", jwtKV, "secret", "dev_secret")
+			cfg.JWT.ExpiryMinutes = getIntWithEnv("JWT_EXPIRY_MINUTES", jwtKV, "expiry_minutes", 60)
+		}
+	} else {
+		cfg.JWT.Secret = getEnv("JWT_SECRET", "dev_secret")
+		cfg.JWT.ExpiryMinutes = getEnvInt("JWT_EXPIRY_MINUTES", 60)
+	}
 
 	return cfg
 }
 
-// parseSimpleYAML — очень простой парсер YAML вида:
-// section:
-//
-//	key: value
-//
-// Поддерживает ${ENV:-default} в value.
-// Не поддерживает вложенность глубже 1 уровня, массивы, кавычки и пр.
-func parseSimpleYAML(path string, out map[string]map[string]string) error {
+// parseYAML — парсит простые YAML файлы без глубокой вложенности
+// Формат: key: value (плоский) либо section: \n  key: value
+func parseYAML(path string) (map[string]map[string]string, error) {
 	f, err := os.Open(filepath.Clean(path))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
 
+	result := map[string]map[string]string{}
 	section := ""
+
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
 		line := strings.TrimSpace(sc.Text())
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		// новая секция
-		if strings.HasSuffix(line, ":") && !strings.Contains(line, " ") && !strings.Contains(line, "\t") {
+
+		// Проверяем, является ли строка началом секции (заканчивается на ':' без пробелов)
+		if strings.HasSuffix(line, ":") && !strings.Contains(line, " ") {
 			section = strings.TrimSuffix(line, ":")
-			if out[section] == nil {
-				out[section] = map[string]string{}
+			if result[section] == nil {
+				result[section] = map[string]string{}
 			}
 			continue
 		}
-		// ключ: значение в секции
+
 		parts := strings.SplitN(line, ":", 2)
 		if len(parts) != 2 {
 			continue
 		}
+
 		key := strings.TrimSpace(parts[0])
 		val := strings.TrimSpace(parts[1])
-
-		// уберём возможные кавычки вокруг значения
 		val = strings.Trim(val, `"'`)
 
-		// поддержка ${VAR:-default}
-		if strings.HasPrefix(val, "${") && strings.HasSuffix(val, "}") {
-			val = expandEnv(val)
+		// Если section не пустой, кладем в секцию, иначе в root
+		if section != "" {
+			if result[section] == nil {
+				result[section] = map[string]string{}
+			}
+			result[section][key] = val
+		} else {
+			// плоская структура, создаем root секцию
+			if result[""] == nil {
+				result[""] = map[string]string{}
+			}
+			result[""][key] = val
 		}
-
-		if section == "" {
-			// ключ вне секции — игнорируем (или можно положить в секцию "root")
-			continue
-		}
-		out[section][key] = val
 	}
-	return sc.Err()
+
+	return result, sc.Err()
 }
 
-func expandEnv(expr string) string {
-	// expr вида ${VAR:-default} или ${VAR}
-	inner := strings.TrimSuffix(strings.TrimPrefix(expr, "${"), "}")
-	parts := strings.SplitN(inner, ":-", 2)
-	env := os.Getenv(parts[0])
-	if env != "" {
-		return env
+func getEnv(key, def string) string {
+	if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+		return v
 	}
-	if len(parts) == 2 {
-		return parts[1]
+	return def
+}
+
+func getEnvInt(key string, def int) int {
+	if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
 	}
-	return ""
+	return def
+}
+
+func getStrWithEnv(envKey string, yaml map[string]map[string]string, key, def string) string {
+	if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
+		return v
+	}
+	if val, ok := yaml[""][key]; ok && val != "" {
+		return val
+	}
+	return def
+}
+
+func getIntWithEnv(envKey string, yaml map[string]map[string]string, key string, def int) int {
+	if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	if val, ok := yaml[""][key]; ok && val != "" {
+		if n, err := strconv.Atoi(val); err == nil {
+			return n
+		}
+	}
+	return def
+}
+
+func getStrWithEnvNested(envKey string, section map[string]string, key, def string) string {
+	if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
+		return v
+	}
+	if val, ok := section[key]; ok && val != "" {
+		return val
+	}
+	return def
+}
+
+func getIntWithEnvNested(envKey string, section map[string]string, key string, def int) int {
+	if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	if val, ok := section[key]; ok && val != "" {
+		if n, err := strconv.Atoi(val); err == nil {
+			return n
+		}
+	}
+	return def
+}
+
+// DSN возвращает строку подключения к БД
+func (c DBConfig) DSN() string {
+	return fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		c.Host, c.Port, c.User, c.Password, c.Database, c.SSLMode,
+	)
+}
+
+// AMQPURL возвращает URL подключения к RabbitMQ
+func (c MQConfig) AMQPURL() string {
+	return fmt.Sprintf(
+		"amqp://%s:%s@%s:%d%s",
+		c.User, c.Password, c.Host, c.Port, c.VHost,
+	)
 }

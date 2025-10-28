@@ -19,15 +19,29 @@ func main() {
 	svc := flag.String("service", "ride", "ride|driver|admin|all")
 	flag.Parse()
 
+	// Загружаем конфигурацию
 	cfg := config.Load()
 
+	// Контекст с graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Канал для перехвата сигналов
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-	go func() { <-quit; cancel() }()
 
+	// Горутина для обработки сигналов
+	go func() {
+		sig := <-quit
+		log := logger.NewLogger("main")
+		log.Info(logger.Entry{
+			Action:  "shutdown_signal_received",
+			Message: sig.String(),
+		})
+		cancel()
+	}()
+
+	// Запуск сервисов
 	switch *svc {
 	case "ride":
 		log := logger.NewLogger("ride-service")
@@ -52,8 +66,18 @@ func main() {
 
 	default:
 		log := logger.NewLogger("bootstrap")
-		log.Fatal(logger.Entry{Action: "invalid_service", Message: *svc})
+		log.Fatal(logger.Entry{
+			Action:  "invalid_service",
+			Message: *svc,
+		})
 	}
 
+	// Ожидаем завершения
 	<-ctx.Done()
+
+	finalLog := logger.NewLogger("main")
+	finalLog.Info(logger.Entry{
+		Action:  "shutdown_complete",
+		Message: "all services stopped",
+	})
 }
