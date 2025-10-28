@@ -25,11 +25,3 @@ type Ride struct {
 	CreatedAt               time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt               time.Time  `json:"updated_at" db:"updated_at"`
 }
-
-// RideRequest — DTO для создания поездки через HTTP.
-type RideRequest struct {
-	PickupLat      float64 `json:"pickup_lat"`
-	PickupLng      float64 `json:"pickup_lng"`
-	DestinationLat float64 `json:"destination_lat"`
-	DestinationLng float64 `json:"destination_lng"`
-}
