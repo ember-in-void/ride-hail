@@ -1,5 +1,5 @@
-rabbitmq:
-  host: ${RABBITMQ_HOST:-localhost}
-  port: ${RABBITMQ_PORT:-5672}
-  user: ${RABBITMQ_USER:-guest}
-  password: ${RABBITMQ_PASSWORD:-guest}
+host: rabbitmq
+port: 5672
+user: guest
+password: guest
+vhost: /

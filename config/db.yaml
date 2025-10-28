@@ -1,6 +1,6 @@
-database:
-  host: ${DB_HOST:-localhost}
-  port: ${DB_PORT:-5432}
-  user: ${DB_USER:-ridehail_user}
-  password: ${DB_PASSWORD:-ridehail_pass}
-  database: ${DB_NAME:-ridehail_db}
+host: postgres
+port: 5432
+user: ridehail_user
+password: ridehail_pass
+database: ridehail_db
+sslmode: disable

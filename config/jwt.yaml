@@ -1,3 +1,7 @@
 jwt:
-  secret: ${JWT_SECRET:-supersecretkey}
-  expiry_minutes: ${JWT_EXPIRY:-60}
+  secret: dev_secret              # если у тебя один общий
+  expiry_minutes: 60
+# Если хочешь раздельно по ролям, сделай поля отдельно в своем формате и поправь LoadJWTConfig
+# passenger_secret: passenger_secret
+# driver_secret: driver_secret
+# admin_secret: admin_secret
