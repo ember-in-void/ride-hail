@@ -33,17 +33,13 @@ services:
   app-ride:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: deployments/Dockerfile  # ✅ ИСПРАВЛЕНО
     container_name: ridehail-ride
     command: ["./ride-hail-system", "-service=ride"]
     environment:
       CONFIG_DIR: /app/config
     volumes:
-      - ../config/db.yaml:/app/config/db.yaml:ro
-      - ../config/mq.yaml:/app/config/mq.yaml:ro
-      - ../config/service.yaml:/app/config/service.yaml:ro
-      - ../config/ws.yaml:/app/config/ws.yaml:ro
-      - ../config/jwt.yaml:/app/config/jwt.yaml:ro
+      - ../config:/app/config:ro  # ✅ Монтируем всю папку
     depends_on:
       postgres:
         condition: service_healthy
@@ -56,17 +52,13 @@ services:
   app-driver:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: deployments/Dockerfile  # ✅ ИСПРАВЛЕНО
     container_name: ridehail-driver
     command: ["./ride-hail-system", "-service=driver"]
     environment:
       CONFIG_DIR: /app/config
     volumes:
-      - ../config/db.yaml:/app/config/db.yaml:ro
-      - ../config/mq.yaml:/app/config/mq.yaml:ro
-      - ../config/service.yaml:/app/config/service.yaml:ro
-      - ../config/ws.yaml:/app/config/ws.yaml:ro
-      - ../config/jwt.yaml:/app/config/jwt.yaml:ro
+      - ../config:/app/config:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,17 +70,13 @@ services:
   app-admin:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: deployments/Dockerfile  # ✅ ИСПРАВЛЕНО
     container_name: ridehail-admin
     command: ["./ride-hail-system", "-service=admin"]
     environment:
       CONFIG_DIR: /app/config
     volumes:
-      - ../config/db.yaml:/app/config/db.yaml:ro
-      - ../config/mq.yaml:/app/config/mq.yaml:ro
-      - ../config/service.yaml:/app/config/service.yaml:ro
-      - ../config/ws.yaml:/app/config/ws.yaml:ro
-      - ../config/jwt.yaml:/app/config/jwt.yaml:ro
+      - ../config:/app/config:ro
     depends_on:
       postgres:
         condition: service_healthy
