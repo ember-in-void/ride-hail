@@ -6,10 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"ridehail/internal/admin/adapters/in/transport"
+	"ridehail/internal/admin/adapters/out/repo"
+	"ridehail/internal/admin/application/usecase"
+	"ridehail/internal/shared/auth"
 	"ridehail/internal/shared/config"
 	db_conn "ridehail/internal/shared/db"
 	"ridehail/internal/shared/logger"
-	"ridehail/internal/shared/mq"
 )
 
 // Run запускает Admin Service
@@ -27,7 +30,7 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	}
 	defer db_conn.Close(dbPool, log)
 
-	// Применяем миграции (shared migrations уже применены ride service)
+	// Применяем миграции (идемпотентно)
 	if err := db_conn.Migrate(ctx, dbPool, log); err != nil {
 		log.Error(logger.Entry{
 			Action:  "db_migration_failed",
@@ -37,35 +40,29 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 		// Не падаем если миграции уже применены
 	}
 
-	// 2. Инициализация RabbitMQ
-	mqConn, err := mq.NewRabbitMQ(ctx, cfg.RabbitMQ, log)
-	if err != nil {
-		log.Fatal(logger.Entry{
-			Action:  "rabbitmq_connection_failed",
-			Message: err.Error(),
-			Error:   &logger.ErrObj{Msg: err.Error()},
-		})
-	}
-	defer mqConn.Close()
+	// 2. Инициализация JWT сервиса
+	jwtService := auth.NewJWTService(cfg.JWT)
 
-	// Создаем топологию (идемпотентно)
-	if err := mq.SetupTopology(ctx, mqConn, log); err != nil {
-		log.Error(logger.Entry{
-			Action:  "rabbitmq_topology_setup_failed",
-			Message: err.Error(),
-			Error:   &logger.ErrObj{Msg: err.Error()},
-		})
-		// Не падаем если топология уже создана
-	}
+	// 3. Создаем репозитории (Adapter OUT)
+	userRepo := repo.NewUserPgRepository(dbPool, log)
 
-	// 3. Простой HTTP сервер с /health endpoint
+	// 4. Создаем use cases (Application)
+	createUserUC := usecase.NewCreateUserService(userRepo, log)
+	listUsersUC := usecase.NewListUsersService(userRepo, log)
+
+	// 5. Создаем HTTP handler (Adapter IN)
+	httpHandler := transport.NewHTTPHandler(createUserUC, listUsersUC, log)
+
+	// 6. Настраиваем HTTP сервер
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"status":"ok","service":"admin"}`))
-	})
 
+	// Middleware для ADMIN аутентификации
+	adminAuthMiddleware := transport.AdminAuthMiddleware(jwtService, log)
+
+	// Регистрируем маршруты
+	httpHandler.RegisterRoutes(mux, adminAuthMiddleware)
+
+	// HTTP сервер
 	addr := fmt.Sprintf(":%d", cfg.Services.AdminServicePort)
 	server := &http.Server{
 		Addr:              addr,
@@ -95,7 +92,7 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	<-ctx.Done()
 	log.Info(logger.Entry{Action: "admin_service_stopping", Message: "shutting down admin service"})
 
-	// Graceful shutdown HTTP сервера
+	// Завершаем работу HTTP сервера
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := server.Shutdown(shutdownCtx); err != nil {
