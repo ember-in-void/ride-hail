@@ -59,8 +59,8 @@ type RequestRideHTTPRequest struct {
 func (h *HTTPHandler) handleRequestRide(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Извлекаем user_id из контекста (добавлен JWT middleware)
-	userID, ok := ctx.Value("user_id").(string)
+	// Извлекаем user_id из контекста (используем типизированный ключ из middleware)
+	userID, ok := ctx.Value(ContextKeyUserID).(string)
 	if !ok || userID == "" {
 		h.respondError(w, http.StatusUnauthorized, "unauthorized")
 		return

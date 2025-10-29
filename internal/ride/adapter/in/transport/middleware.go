@@ -14,7 +14,7 @@ import (
 type contextKey string
 
 const (
-	// Контекстные ключи для хранения данных пользователя
+	// Контекстные ключи для хранения данных пользователя (EXPORTED для использования в handlers)
 	ContextKeyUserID    contextKey = "user_id"
 	ContextKeyUserEmail contextKey = "user_email"
 	ContextKeyUserRole  contextKey = "user_role"
