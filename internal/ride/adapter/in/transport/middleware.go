@@ -25,6 +25,10 @@ func JWTMiddleware(jwtService *auth.JWTService, log *logger.Logger) func(http.Ha
 			// Извлекаем токен из заголовка Authorization
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
+				log.Debug(logger.Entry{
+					Action:  "jwt_auth_missing_header",
+					Message: "missing authorization header",
+				})
 				respondUnauthorized(w, "missing authorization header")
 				return
 			}
@@ -32,11 +36,25 @@ func JWTMiddleware(jwtService *auth.JWTService, log *logger.Logger) func(http.Ha
 			// Проверяем формат "Bearer <token>"
 			parts := strings.Split(authHeader, " ")
 			if len(parts) != 2 || parts[0] != "Bearer" {
+				log.Debug(logger.Entry{
+					Action:  "jwt_auth_invalid_format",
+					Message: "invalid authorization header format",
+				})
 				respondUnauthorized(w, "invalid authorization header format")
 				return
 			}
 
 			token := parts[1]
+
+			// DEBUG: логируем первые символы токена
+			tokenPreview := token
+			if len(token) > 20 {
+				tokenPreview = token[:20] + "..."
+			}
+			log.Debug(logger.Entry{
+				Action:  "jwt_auth_validating",
+				Message: "validating token: " + tokenPreview,
+			})
 
 			// Валидируем токен
 			claims, err := jwtService.ValidateToken(token)
@@ -49,6 +67,11 @@ func JWTMiddleware(jwtService *auth.JWTService, log *logger.Logger) func(http.Ha
 				respondUnauthorized(w, "invalid or expired token")
 				return
 			}
+
+			log.Info(logger.Entry{
+				Action:  "jwt_auth_success",
+				Message: "user authenticated",
+			})
 
 			// Добавляем данные пользователя в контекст
 			ctx := context.WithValue(r.Context(), ContextKeyUserID, claims.UserID)

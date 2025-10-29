@@ -12,14 +12,19 @@ echo "1. Checking /health endpoint..."
 curl -s "$API_URL/health" | jq .
 echo ""
 
-# 2. Генерируем JWT токен (нужен cmd/generate-jwt)
+# 2. Генерируем JWT токен
 echo "2. Generating JWT token..."
-TOKEN=$(go run cmd/generate-jwt/main.go -user=test-user-123 -email=test@example.com -role=PASSENGER 2>/dev/null | grep -v "^✅" | grep -v "^User" | grep -v "^Token:" | grep -v "^📋" | grep -v "^💡" | grep -v "^curl" | grep -v "^  -H" | grep -v "^  -d" | tr -d '\n' | xargs)
-echo "Token: $TOKEN"
+TOKEN=$(go run cmd/generate-jwt/main.go -user=test-user-123 -email=test@example.com -role=PASSENGER 2>/dev/null | grep '^eyJ' | head -n1 | xargs)
+echo "Token generated (first 50 chars): ${TOKEN:0:50}..."
 echo ""
 
-# 3. Создаем поездку
-echo "3. Creating ride with valid data..."
+# 3. Проверяем токен утилитой
+echo "3. Verifying token with verify-jwt utility..."
+go run cmd/verify-jwt/main.go -token="$TOKEN"
+echo ""
+
+# 4. Создаем поездку
+echo "4. Creating ride with valid data..."
 RESPONSE=$(curl -s -X POST "$API_URL/rides" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -35,13 +40,20 @@ RESPONSE=$(curl -s -X POST "$API_URL/rides" \
   }')
 
 echo "$RESPONSE" | jq .
-RIDE_ID=$(echo "$RESPONSE" | jq -r '.ride_id')
-echo ""
-echo "Created ride_id: $RIDE_ID"
+RIDE_ID=$(echo "$RESPONSE" | jq -r '.ride_id // empty')
+
+if [ -n "$RIDE_ID" ] && [ "$RIDE_ID" != "null" ]; then
+    echo ""
+    echo "✅ Created ride_id: $RIDE_ID"
+else
+    echo ""
+    echo "❌ Failed to create ride"
+    echo "Response: $RESPONSE"
+fi
 echo ""
 
-# 4. Тест без токена (должна быть ошибка 401)
-echo "4. Testing without token (should fail)..."
+# 5. Тест без токена (должна быть ошибка 401)
+echo "5. Testing without token (should fail)..."
 curl -s -X POST "$API_URL/rides" \
   -H "Content-Type: application/json" \
   -d '{
@@ -51,8 +63,8 @@ curl -s -X POST "$API_URL/rides" \
   }' | jq .
 echo ""
 
-# 5. Тест с невалидным типом авто
-echo "5. Testing with invalid vehicle type..."
+# 6. Тест с невалидным типом авто
+echo "6. Testing with invalid vehicle type..."
 curl -s -X POST "$API_URL/rides" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -63,8 +75,8 @@ curl -s -X POST "$API_URL/rides" \
   }' | jq .
 echo ""
 
-# 6. Тест с пустым телом
-echo "6. Testing with empty body..."
+# 7. Тест с пустым телом
+echo "7. Testing with empty body..."
 curl -s -X POST "$API_URL/rides" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \

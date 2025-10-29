@@ -13,12 +13,13 @@ import (
 	"time"
 )
 
-// Level per spec: only DEBUG, INFO, ERROR
+// Level per spec: DEBUG, INFO, ERROR
 type Level int
 
 const (
 	LevelDebug Level = iota
 	LevelInfo
+	LevelWarn
 	LevelError
 )
 
@@ -26,6 +27,8 @@ func ParseLevel(s string) Level {
 	switch strings.ToUpper(strings.TrimSpace(s)) {
 	case "DEBUG":
 		return LevelDebug
+	case "WARN":
+		return LevelWarn
 	case "ERROR":
 		return LevelError
 	default:
@@ -37,6 +40,8 @@ func levelString(l Level) string {
 	switch l {
 	case LevelDebug:
 		return "DEBUG"
+	case LevelWarn:
+		return "WARN"
 	case LevelError:
 		return "ERROR"
 	default:
@@ -53,13 +58,13 @@ type ErrObj struct {
 // Entry strictly follows the required schema
 type Entry struct {
 	Timestamp  string         `json:"timestamp"`            // ISO 8601 (UTC)
-	Level      string         `json:"level"`                // INFO | DEBUG | ERROR
+	Level      string         `json:"level"`                // INFO | DEBUG | WARN | ERROR
 	Service    string         `json:"service"`              // e.g., ride-service
 	Action     string         `json:"action"`               // event name, e.g., ride_requested
 	Message    string         `json:"message"`              // human-readable
 	Hostname   string         `json:"hostname"`             // container/host
-	RequestID  string         `json:"request_id"`           // correlation id
-	RideID     string         `json:"ride_id"`              // when applicable
+	RequestID  string         `json:"request_id,omitempty"` // correlation id
+	RideID     string         `json:"ride_id,omitempty"`    // when applicable
 	Error      *ErrObj        `json:"error,omitempty"`      // only for ERROR
 	Additional map[string]any `json:"additional,omitempty"` // optional extras
 }
@@ -164,6 +169,7 @@ func (l *Logger) Close() {
 
 func (l *Logger) Debug(e Entry) { l.log(LevelDebug, e, nil) }
 func (l *Logger) Info(e Entry)  { l.log(LevelInfo, e, nil) }
+func (l *Logger) Warn(e Entry)  { l.log(LevelWarn, e, nil) }
 func (l *Logger) Error(e Entry) { l.log(LevelError, e, nil) }
 func (l *Logger) Fatal(e Entry) {
 	// include stack automatically for fatal
@@ -200,6 +206,7 @@ type ContextLogger struct {
 
 func (c *ContextLogger) Debug(e Entry) { c.parent.log(LevelDebug, e, c.base) }
 func (c *ContextLogger) Info(e Entry)  { c.parent.log(LevelInfo, e, c.base) }
+func (c *ContextLogger) Warn(e Entry)  { c.parent.log(LevelWarn, e, c.base) }
 func (c *ContextLogger) Error(e Entry) { c.parent.log(LevelError, e, c.base) }
 func (c *ContextLogger) Fatal(e Entry) { c.parent.Fatal(mergeEntry(e, c.base)) }
 
