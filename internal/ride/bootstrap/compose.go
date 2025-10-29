@@ -16,6 +16,7 @@ import (
 	db_conn "ridehail/internal/shared/db"
 	"ridehail/internal/shared/logger"
 	"ridehail/internal/shared/mq"
+	"ridehail/internal/shared/user"
 	"ridehail/internal/shared/ws"
 )
 
@@ -71,6 +72,7 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// 4. Создаем репозитории (Adapter OUT)
 	rideRepo := repo.NewRidePgRepository(dbPool, log)
 	coordRepo := repo.NewCoordinatePgRepository(dbPool, log)
+	userRepo := user.NewPgRepository(dbPool, log) // NEW: User repository
 
 	// 5. Создаем publishers/notifiers (Adapter OUT)
 	eventPublisher := out_amqp.NewRideEventPublisher(mqConn, log)
@@ -91,8 +93,8 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// 8. Настраиваем HTTP сервер
 	mux := http.NewServeMux()
 
-	// Middleware для JWT
-	authMiddleware := transport.JWTMiddleware(jwtService, log)
+	// Middleware для JWT + проверка пользователя в БД
+	authMiddleware := transport.JWTMiddleware(jwtService, userRepo, log)
 
 	// Регистрируем маршруты
 	httpHandler.RegisterRoutes(mux, authMiddleware)
