@@ -68,9 +68,11 @@ type Logger struct {
 	service  string
 	minLevel Level
 	hostname string
+	pretty   bool // если true, используем json.MarshalIndent
 
-	enc *json.Encoder
-	mu  sync.Mutex
+	outWriter io.Writer // stdout или MultiWriter
+	errWriter io.Writer // stderr или MultiWriter для ошибок
+	mu        sync.Mutex
 
 	// optional dev file writers
 	infoFile io.Closer
@@ -80,11 +82,15 @@ type Logger struct {
 // NewLogger stdout-only (recommended for prod)
 func NewLogger(service string) *Logger {
 	h, _ := os.Hostname()
+	pretty := strings.ToLower(os.Getenv("LOG_PRETTY")) == "true"
+
 	l := &Logger{
-		service:  service,
-		minLevel: LevelInfo,
-		hostname: h,
-		enc:      json.NewEncoder(os.Stdout),
+		service:   service,
+		minLevel:  LevelInfo,
+		hostname:  h,
+		pretty:    pretty,
+		outWriter: os.Stdout,
+		errWriter: os.Stderr,
 	}
 	return l
 }
@@ -94,8 +100,10 @@ func NewLogger(service string) *Logger {
 func NewLoggerWithOptions(service, minLevelStr, fileDir string) (*Logger, error) {
 	h, _ := os.Hostname()
 	min := ParseLevel(minLevelStr)
+	pretty := strings.ToLower(os.Getenv("LOG_PRETTY")) == "true"
 
-	var w io.Writer = os.Stdout
+	var outWriter io.Writer = os.Stdout
+	var errWriter io.Writer = os.Stderr
 	var infoCloser io.Closer
 	var errCloser io.Closer
 
@@ -115,25 +123,31 @@ func NewLoggerWithOptions(service, minLevelStr, fileDir string) (*Logger, error)
 			_ = infoF.Close()
 			return nil, fmt.Errorf("open error log: %w", err)
 		}
-		w = io.MultiWriter(os.Stdout, infoF) // encoder writes to info; errors we handle separately
+
+		outWriter = io.MultiWriter(os.Stdout, infoF)
+		errWriter = io.MultiWriter(os.Stderr, errF)
 		infoCloser, errCloser = infoF, errF
 
 		l := &Logger{
-			service:  service,
-			minLevel: min,
-			hostname: h,
-			enc:      json.NewEncoder(w),
-			infoFile: infoCloser,
-			errFile:  errCloser,
+			service:   service,
+			minLevel:  min,
+			hostname:  h,
+			pretty:    pretty,
+			outWriter: outWriter,
+			errWriter: errWriter,
+			infoFile:  infoCloser,
+			errFile:   errCloser,
 		}
 		return l, nil
 	}
 
 	return &Logger{
-		service:  service,
-		minLevel: min,
-		hostname: h,
-		enc:      json.NewEncoder(os.Stdout),
+		service:   service,
+		minLevel:  min,
+		hostname:  h,
+		pretty:    pretty,
+		outWriter: os.Stdout,
+		errWriter: os.Stderr,
 	}, nil
 }
 
@@ -162,7 +176,7 @@ func (l *Logger) Fatal(e Entry) {
 	os.Exit(1)
 }
 
-// WithFields returns a shallow “context” logger that auto-merges Additional fields.
+// WithFields returns a shallow "context" logger that auto-merges Additional fields.
 func (l *Logger) WithFields(base map[string]any) *ContextLogger {
 	return &ContextLogger{parent: l, base: base}
 }
@@ -239,10 +253,12 @@ func (l *Logger) log(level Level, e Entry, base map[string]any) {
 	}
 
 	// caller enrichment (optional extra)
+	if e.Additional == nil {
+		e.Additional = make(map[string]any)
+	}
 	if _, ok := e.Additional["caller"]; !ok {
 		if pc, file, line, ok := runtime.Caller(3); ok {
 			fn := runtime.FuncForPC(pc)
-			e.Additional = ensureMap(e.Additional)
 			e.Additional["caller"] = fmt.Sprintf("%s:%d (%s)", file, line, funcName(fn))
 		}
 	}
@@ -250,13 +266,39 @@ func (l *Logger) log(level Level, e Entry, base map[string]any) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	// Encode to stdout (info encoder)
-	_ = l.enc.Encode(e)
+	// Выбираем writer в зависимости от уровня
+	writer := l.outWriter
+	if level == LevelError {
+		writer = l.errWriter
+	}
 
-	// If we had error-level and dev errFile is present, duplicate minimal error line to err file.
-	if level == LevelError && l.errFile != nil {
-		enc := json.NewEncoder(l.errFile.(io.Writer))
-		_ = enc.Encode(e)
+	// Сериализуем JSON
+	var b []byte
+	var err error
+
+	if l.pretty {
+		// Красивый вывод с отступами
+		b, err = json.MarshalIndent(e, "", "  ")
+	} else {
+		// Компактный вывод (одна строка)
+		b, err = json.Marshal(e)
+	}
+
+	if err != nil {
+		// fallback: plain text to errWriter
+		fmt.Fprintf(l.errWriter, `{"timestamp":"%s","level":"error","service":"%s","message":"failed to marshal log: %v"}`+"\n",
+			time.Now().UTC().Format(time.RFC3339Nano), l.service, err)
+		return
+	}
+
+	// Пишем лог
+	_, _ = writer.Write(b)
+	_, _ = writer.Write([]byte("\n"))
+
+	// Дублируем ERROR в errFile если есть
+	if level == LevelError && l.errFile != nil && l.errFile != l.infoFile {
+		_, _ = l.errFile.(io.Writer).Write(b)
+		_, _ = l.errFile.(io.Writer).Write([]byte("\n"))
 	}
 }
 
@@ -265,13 +307,6 @@ func funcName(fn *runtime.Func) string {
 		return "unknown"
 	}
 	return fn.Name()
-}
-
-func ensureMap(m map[string]any) map[string]any {
-	if m == nil {
-		return make(map[string]any)
-	}
-	return m
 }
 
 func get(m map[string]any, k string) any {
