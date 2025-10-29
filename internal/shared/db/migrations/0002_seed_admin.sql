@@ -1,6 +1,8 @@
 -- Seed data: default admin user for dev/demo environments
 -- This migration is idempotent (ON CONFLICT DO NOTHING)
 
+-- Default admin credentials:
+-- Email:    admin@ridehail.com
 -- Password: admin123
 -- Hash generated with: bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
 -- Cost: 10 (bcrypt default)
@@ -15,7 +17,7 @@ INSERT INTO users (
     created_at,
     updated_at
 ) VALUES (
-    'admin-001',
+    '00000000-0000-0000-0000-000000000001', -- fixed UUID for default admin
     'admin@ridehail.com',
     'ADMIN',
     'ACTIVE',
@@ -32,7 +34,7 @@ DECLARE
 BEGIN
     SELECT EXISTS(SELECT 1 FROM users WHERE email = 'admin@ridehail.com') INTO admin_exists;
     IF admin_exists THEN
-        RAISE NOTICE 'Default admin user exists: admin@ridehail.com';
+        RAISE NOTICE 'Default admin user exists: admin@ridehail.com (id: 00000000-0000-0000-0000-000000000001)';
     ELSE
         RAISE WARNING 'Failed to create default admin user';
     END IF;

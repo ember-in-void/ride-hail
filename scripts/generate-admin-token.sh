@@ -8,7 +8,7 @@ echo "🔐 Generating JWT token for default admin..."
 echo ""
 
 TOKEN=$(go run cmd/generate-jwt/main.go \
-  -user=admin-001 \
+  -user=00000000-0000-0000-0000-000000000001 \
   -email=admin@ridehail.com \
   -role=ADMIN \
   2>/dev/null | grep '^eyJ' | head -n1 | xargs)

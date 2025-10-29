@@ -15,7 +15,7 @@ echo ""
 # 2. Генерируем JWT токен для ADMIN
 echo "2. Generating ADMIN JWT token..."
 ADMIN_TOKEN=$(go run cmd/generate-jwt/main.go \
-  -user=admin-001 \
+  -user=00000000-0000-0000-0000-000000000001 \
   -email=admin@ridehail.com \
   -role=ADMIN \
   2>/dev/null | grep '^eyJ' | head -n1 | xargs)
@@ -108,7 +108,7 @@ echo ""
 # 9. Тест с PASSENGER токеном (должен вернуть 403 Forbidden)
 echo "9. Testing with PASSENGER token (should fail with 403)..."
 PASSENGER_TOKEN=$(go run cmd/generate-jwt/main.go \
-  -user=passenger-test \
+  -user=550e8400-e29b-41d4-a716-446655440000 \
   -email=passenger@test.com \
   -role=PASSENGER \
   2>/dev/null | grep '^eyJ' | head -n1 | xargs)

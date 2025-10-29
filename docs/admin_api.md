@@ -25,7 +25,7 @@ Authorization: Bearer <JWT_TOKEN>
 Или вручную:
 ```bash
 go run cmd/generate-jwt/main.go \
-  -user=admin-001 \
+  -user=00000000-0000-0000-0000-000000000001 \
   -email=admin@ridehail.com \
   -role=ADMIN
 ```
@@ -36,6 +36,7 @@ go run cmd/generate-jwt/main.go \
 
 При первом запуске системы автоматически создаётся дефолтный админ:
 
+- **User ID:** `00000000-0000-0000-0000-000000000001`
 - **Email:** `admin@ridehail.com`
 - **Password:** `admin123`
 - **Role:** `ADMIN`

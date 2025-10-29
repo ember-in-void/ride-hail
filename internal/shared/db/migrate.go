@@ -62,7 +62,7 @@ func Migrate(ctx context.Context, pool *pgxpool.Pool, log *logger.Logger) error 
 			return fmt.Errorf("commit %s failed: %w", name, err)
 		}
 
-		log.Debug(logger.Entry{
+		log.Info(logger.Entry{
 			Action:  "migration_applied",
 			Message: name,
 		})
