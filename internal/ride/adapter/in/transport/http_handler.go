@@ -29,7 +29,10 @@ func NewHTTPHandler(requestRideUC in.RequestRideUseCase, log *logger.Logger) *HT
 
 // RegisterRoutes регистрирует все HTTP маршруты
 func (h *HTTPHandler) RegisterRoutes(mux *http.ServeMux, authMiddleware func(http.HandlerFunc) http.HandlerFunc) {
+	// liveness
 	mux.HandleFunc("GET /health", h.handleHealth)
+
+	// ride request
 	mux.HandleFunc("POST /rides", authMiddleware(h.handleRequestRide))
 }
 
@@ -112,14 +115,12 @@ func (h *HTTPHandler) handleRequestRide(w http.ResponseWriter, r *http.Request) 
 		Priority:      req.Priority,
 	}
 
-	// Выполняем use case
 	output, err := h.requestRideUC.Execute(ctx, input)
 	if err != nil {
 		h.handleUseCaseError(w, err)
 		return
 	}
 
-	// Возвращаем успешный ответ
 	h.respondJSON(w, http.StatusCreated, output)
 }
 
