@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	inamqp "ridehail/internal/ride/adapter/in/in_amqp"
+	"ridehail/internal/ride/adapter/in/in_ws"
 	"ridehail/internal/ride/adapter/in/transport"
 	"ridehail/internal/ride/adapter/out/out_amqp"
 	"ridehail/internal/ride/adapter/out/out_ws"
@@ -17,7 +19,6 @@ import (
 	"ridehail/internal/shared/logger"
 	"ridehail/internal/shared/mq"
 	"ridehail/internal/shared/user"
-	"ridehail/internal/shared/ws"
 )
 
 // Run запускает Ride Service
@@ -64,10 +65,35 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 		})
 	}
 
-	// 3. Инициализация WebSocket Hub
+	// 3. Инициализация WebSocket Hub для пассажиров
 	jwtService := auth.NewJWTService(cfg.JWT)
-	wsHub := ws.NewHub(jwtService.ExtractUserID, log)
+	passengerWS := in_ws.NewPassengerWSHandler(jwtService, log)
+	wsHub := passengerWS.GetHub()
 	go wsHub.Run(ctx)
+
+	// 3.1. Инициализация Location Consumer для получения обновлений от водителей
+	locationConsumer := inamqp.NewLocationConsumer(mqConn, passengerWS, log)
+	go func() {
+		if err := locationConsumer.Start(ctx); err != nil {
+			log.Error(logger.Entry{
+				Action:  "location_consumer_failed",
+				Message: err.Error(),
+				Error:   &logger.ErrObj{Msg: err.Error()},
+			})
+		}
+	}()
+
+	// 3.2. Инициализация Driver Response Consumer для обработки ответов водителей
+	driverResponseConsumer := inamqp.NewDriverResponseConsumer(mqConn, passengerWS, log)
+	go func() {
+		if err := driverResponseConsumer.Start(ctx); err != nil {
+			log.Error(logger.Entry{
+				Action:  "driver_response_consumer_failed",
+				Message: err.Error(),
+				Error:   &logger.ErrObj{Msg: err.Error()},
+			})
+		}
+	}()
 
 	// 4. Создаем репозитории (Adapter OUT)
 	rideRepo := repo.NewRidePgRepository(dbPool, log)
@@ -99,8 +125,8 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// Регистрируем маршруты
 	httpHandler.RegisterRoutes(mux, authMiddleware)
 
-	// WebSocket endpoint
-	mux.HandleFunc("/ws", wsHub.ServeWS)
+	// WebSocket endpoint для пассажиров
+	mux.HandleFunc("/ws", passengerWS.ServeWS)
 
 	// HTTP сервер
 	addr := fmt.Sprintf(":%d", cfg.Services.RideServicePort)
