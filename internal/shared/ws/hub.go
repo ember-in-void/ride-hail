@@ -38,6 +38,9 @@ var upgrader = websocket.Upgrader{
 // AuthFunc — функция валидации JWT токена и извлечения user_id, role
 type AuthFunc func(token string) (userID, role string, err error)
 
+// MessageHandler — функция обработки входящих сообщений от клиента
+type MessageHandler func(client *Client, messageType string, data json.RawMessage) error
+
 // Client представляет одно WebSocket соединение
 type Client struct {
 	ID     string
@@ -51,13 +54,14 @@ type Client struct {
 
 // Hub управляет всеми WebSocket соединениями
 type Hub struct {
-	clients    map[string]*Client // key = client.ID
-	mu         sync.RWMutex
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan []byte
-	authFunc   AuthFunc
-	log        *logger.Logger
+	clients        map[string]*Client // key = client.ID
+	mu             sync.RWMutex
+	register       chan *Client
+	unregister     chan *Client
+	broadcast      chan []byte
+	authFunc       AuthFunc
+	messageHandler MessageHandler
+	log            *logger.Logger
 }
 
 // NewHub создает новый WebSocket хаб
@@ -70,6 +74,11 @@ func NewHub(authFunc AuthFunc, log *logger.Logger) *Hub {
 		authFunc:   authFunc,
 		log:        log,
 	}
+}
+
+// SetMessageHandler устанавливает обработчик входящих сообщений
+func (h *Hub) SetMessageHandler(handler MessageHandler) {
+	h.messageHandler = handler
 }
 
 // Run запускает главный цикл хаба
@@ -150,6 +159,60 @@ func (h *Hub) SendToUser(userID string, message []byte) {
 			}
 		}
 	}
+}
+
+// SendToRole отправляет сообщение всем пользователям с определенной ролью
+func (h *Hub) SendToRole(role string, message []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	for _, client := range h.clients {
+		if client.Role == role {
+			select {
+			case client.send <- message:
+			default:
+				h.log.Error(logger.Entry{
+					Action:  "send_to_role_failed",
+					Message: role,
+					Additional: map[string]any{
+						"client_id": client.ID,
+					},
+				})
+			}
+		}
+	}
+}
+
+// GetClientsByRole возвращает список user_id для клиентов с определенной ролью
+func (h *Hub) GetClientsByRole(role string) []string {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var userIDs []string
+	for _, client := range h.clients {
+		if client.Role == role {
+			userIDs = append(userIDs, client.UserID)
+		}
+	}
+	return userIDs
+}
+
+// GetClient возвращает клиента по user_id
+func (h *Hub) GetClient(userID string) *Client {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	for _, client := range h.clients {
+		if client.UserID == userID {
+			return client
+		}
+	}
+	return nil
+}
+
+// IsUserConnected проверяет, подключен ли пользователь
+func (h *Hub) IsUserConnected(userID string) bool {
+	return h.GetClient(userID) != nil
 }
 
 // ServeWS обрабатывает HTTP запрос на WebSocket соединение
@@ -251,15 +314,39 @@ func (c *Client) readPump() {
 			break
 		}
 
-		// Обработка входящих сообщений (пока просто логируем)
-		c.log.Debug(logger.Entry{
-			Action:  "ws_message_received",
-			Message: string(message),
-			Additional: map[string]any{
-				"client_id": c.ID,
-				"user_id":   c.UserID,
-			},
-		})
+		// Парсим входящее сообщение
+		var msg struct {
+			Type string          `json:"type"`
+			Data json.RawMessage `json:"data,omitempty"`
+		}
+
+		if err := json.Unmarshal(message, &msg); err != nil {
+			c.log.Error(logger.Entry{
+				Action:  "ws_parse_message_error",
+				Message: err.Error(),
+				Error:   &logger.ErrObj{Msg: err.Error()},
+				Additional: map[string]any{
+					"client_id": c.ID,
+					"raw":       string(message),
+				},
+			})
+			continue
+		}
+
+		// Вызываем обработчик сообщений, если установлен
+		if c.hub.messageHandler != nil {
+			if err := c.hub.messageHandler(c, msg.Type, msg.Data); err != nil {
+				c.log.Error(logger.Entry{
+					Action:  "ws_handle_message_error",
+					Message: err.Error(),
+					Error:   &logger.ErrObj{Msg: err.Error()},
+					Additional: map[string]any{
+						"client_id": c.ID,
+						"msg_type":  msg.Type,
+					},
+				})
+			}
+		}
 	}
 }
 
@@ -312,4 +399,23 @@ func (h *Hub) SendToUserJSON(userID string, data interface{}) error {
 	}
 	h.SendToUser(userID, msg)
 	return nil
+}
+
+// SendToRoleJSON отправляет JSON всем пользователям с ролью
+func (h *Hub) SendToRoleJSON(role string, data interface{}) error {
+	msg, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	h.SendToRole(role, msg)
+	return nil
+}
+
+// SendTypedMessage отправляет сообщение с типом конкретному пользователю
+func (h *Hub) SendTypedMessage(userID, msgType string, data interface{}) error {
+	message := map[string]interface{}{
+		"type": msgType,
+		"data": data,
+	}
+	return h.SendToUserJSON(userID, message)
 }
