@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"ridehail/internal/driver/adapters/in/in_amqp"
+	"ridehail/internal/driver/adapters/in/in_ws"
 	"ridehail/internal/driver/adapters/in/transport"
 	messaging "ridehail/internal/driver/adapters/out/amqp"
 	"ridehail/internal/driver/adapters/out/repo"
@@ -83,6 +85,23 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// 6. Инициализация JWT сервиса для аутентификации
 	jwtService := auth.NewJWTService(cfg.JWT)
 
+	// 6.1. Инициализация WebSocket Hub для водителей
+	driverWS := in_ws.NewDriverWSHandler(jwtService, msgPublisher, log)
+	wsHub := driverWS.GetHub()
+	go wsHub.Run(ctx)
+
+	// 6.2. Инициализация RabbitMQ Consumer для ride requests
+	rideConsumer := in_amqp.NewRideRequestConsumer(mqConn, locationRepo, driverWS, log)
+	go func() {
+		if err := rideConsumer.Start(ctx); err != nil {
+			log.Error(logger.Entry{
+				Action:  "ride_consumer_failed",
+				Message: err.Error(),
+				Error:   &logger.ErrObj{Msg: err.Error()},
+			})
+		}
+	}()
+
 	// 7. Инициализация HTTP handlers
 	driverHandler := transport.NewDriverHandler(driverService, log)
 
@@ -115,6 +134,9 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 		_, _ = w.Write([]byte(`{"status":"ok","service":"driver"}`))
 	})
 	finalMux.Handle("/drivers/", protectedHandler)
+
+	// WebSocket endpoint для водителей
+	finalMux.HandleFunc("/ws", driverWS.ServeWS)
 
 	// Применяем общие middleware (logging, request ID)
 	handler := transport.LoggingMiddleware(log)(

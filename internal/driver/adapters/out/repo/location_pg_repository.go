@@ -160,3 +160,58 @@ func (r *LocationRepository) CheckRateLimit(ctx context.Context, driverID string
 	elapsed := time.Since(lastUpdate)
 	return elapsed >= 3*time.Second, nil
 }
+
+// NearbyDriverInfo информация о ближайшем водителе
+type NearbyDriverInfo struct {
+	DriverID string
+	Distance float64 // в метрах
+}
+
+// FindNearbyOnlineDrivers находит ближайших онлайн водителей в радиусе
+func (r *LocationRepository) FindNearbyOnlineDrivers(
+	ctx context.Context,
+	pickupLat, pickupLng float64,
+	radiusKm float64,
+	limit int,
+) ([]NearbyDriverInfo, error) {
+	query := `
+		SELECT 
+			d.id as driver_id,
+			ST_Distance(
+				ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+				ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326)::geography
+			) as distance
+		FROM drivers d
+		INNER JOIN coordinates c ON c.entity_id = d.id AND c.entity_type = 'driver' AND c.is_current = true
+		WHERE d.is_online = true
+		  AND d.current_status = 'available'
+		  AND ST_DWithin(
+				ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+				ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326)::geography,
+				$3
+			)
+		ORDER BY distance ASC, d.rating DESC
+		LIMIT $4
+	`
+
+	rows, err := r.db.Query(ctx, query, pickupLng, pickupLat, radiusKm*1000, limit)
+	if err != nil {
+		return nil, fmt.Errorf("query nearby drivers: %w", err)
+	}
+	defer rows.Close()
+
+	var drivers []NearbyDriverInfo
+	for rows.Next() {
+		var driver NearbyDriverInfo
+		if err := rows.Scan(&driver.DriverID, &driver.Distance); err != nil {
+			return nil, fmt.Errorf("scan driver: %w", err)
+		}
+		drivers = append(drivers, driver)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration: %w", err)
+	}
+
+	return drivers, nil
+}
