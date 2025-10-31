@@ -83,18 +83,6 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 		}
 	}()
 
-	// 3.2. Инициализация Driver Response Consumer для обработки ответов водителей
-	driverResponseConsumer := inamqp.NewDriverResponseConsumer(mqConn, passengerWS, log)
-	go func() {
-		if err := driverResponseConsumer.Start(ctx); err != nil {
-			log.Error(logger.Entry{
-				Action:  "driver_response_consumer_failed",
-				Message: err.Error(),
-				Error:   &logger.ErrObj{Msg: err.Error()},
-			})
-		}
-	}()
-
 	// 4. Создаем репозитории (Adapter OUT)
 	rideRepo := repo.NewRidePgRepository(dbPool, log)
 	coordRepo := repo.NewCoordinatePgRepository(dbPool, log)
@@ -112,6 +100,23 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 		rideNotifier,
 		log,
 	)
+
+	handleDriverResponseUC := usecase.NewHandleDriverResponseService(
+		rideRepo,
+		log,
+	)
+
+	// 3.2. Инициализация Driver Response Consumer для обработки ответов водителей
+	driverResponseConsumer := inamqp.NewDriverResponseConsumer(mqConn, handleDriverResponseUC, passengerWS, log)
+	go func() {
+		if err := driverResponseConsumer.Start(ctx); err != nil {
+			log.Error(logger.Entry{
+				Action:  "driver_response_consumer_failed",
+				Message: err.Error(),
+				Error:   &logger.ErrObj{Msg: err.Error()},
+			})
+		}
+	}()
 
 	// 7. Создаем HTTP handler (Adapter IN)
 	httpHandler := transport.NewHTTPHandler(requestRideUC, log)

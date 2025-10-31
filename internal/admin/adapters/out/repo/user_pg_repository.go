@@ -422,7 +422,7 @@ func (r *UserPgRepository) GetDriverDistribution(ctx context.Context) (map[strin
 			vehicle_type,
 			COUNT(*)
 		FROM drivers
-		WHERE is_online = true
+		WHERE status IN ('AVAILABLE', 'BUSY', 'EN_ROUTE')
 		GROUP BY vehicle_type
 	`
 

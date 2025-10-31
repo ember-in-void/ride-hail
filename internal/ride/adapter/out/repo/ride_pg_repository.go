@@ -325,3 +325,43 @@ func (r *RidePgRepository) FindByStatus(ctx context.Context, status string, limi
 
 	return rides, rows.Err()
 }
+
+// AssignDriver назначает водителя на поездку и обновляет статус на DRIVER_ASSIGNED
+func (r *RidePgRepository) AssignDriver(ctx context.Context, rideID string, driverID string) error {
+	query := `
+UPDATE rides 
+SET 
+driver_id = $1,
+status = 'MATCHED',
+matched_at = NOW(),
+updated_at = NOW()
+WHERE id = $2
+  AND status = 'REQUESTED'
+`
+
+	result, err := r.pool.Exec(ctx, query, driverID, rideID)
+	if err != nil {
+		r.log.Error(logger.Entry{
+			Action:  "db_assign_driver_failed",
+			Message: err.Error(),
+			RideID:  rideID,
+			Error:   &logger.ErrObj{Msg: err.Error()},
+		})
+		return fmt.Errorf("assign driver: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("ride not found or already assigned (ride_id=%s)", rideID)
+	}
+
+	r.log.Info(logger.Entry{
+		Action:  "driver_assigned_to_ride",
+		Message: fmt.Sprintf("driver %s assigned to ride %s", driverID, rideID),
+		RideID:  rideID,
+		Additional: map[string]any{
+			"driver_id": driverID,
+		},
+	})
+
+	return nil
+}

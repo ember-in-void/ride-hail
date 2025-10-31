@@ -15,11 +15,11 @@ type CreateUserInput struct {
 
 // CreateUserOutput — результат создания пользователя
 type CreateUserOutput struct {
-	UserID    string
-	Email     string
-	Role      string
-	Status    string
-	CreatedAt string // ISO8601
+	UserID    string `json:"user_id"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
+	Status    string `json:"status"`
+	CreatedAt string `json:"created_at"` // ISO8601
 }
 
 // CreateUserUseCase — интерфейс use case создания пользователя

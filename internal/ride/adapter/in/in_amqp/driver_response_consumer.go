@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"ridehail/internal/ride/adapter/in/in_ws"
+	"ridehail/internal/ride/application/ports/in"
 	"ridehail/internal/shared/logger"
 	"ridehail/internal/shared/mq"
 
@@ -47,21 +48,24 @@ type VehicleDTO struct {
 
 // DriverResponseConsumer обрабатывает ответы водителей на ride requests
 type DriverResponseConsumer struct {
-	mqConn      *mq.RabbitMQ
-	passengerWS *in_ws.PassengerWSHandler
-	log         *logger.Logger
+	mqConn                      *mq.RabbitMQ
+	handleDriverResponseUseCase in.HandleDriverResponseUseCase
+	passengerWS                 *in_ws.PassengerWSHandler
+	log                         *logger.Logger
 }
 
 // NewDriverResponseConsumer создает новый consumer
 func NewDriverResponseConsumer(
 	mqConn *mq.RabbitMQ,
+	handleDriverResponseUseCase in.HandleDriverResponseUseCase,
 	passengerWS *in_ws.PassengerWSHandler,
 	log *logger.Logger,
 ) *DriverResponseConsumer {
 	return &DriverResponseConsumer{
-		mqConn:      mqConn,
-		passengerWS: passengerWS,
-		log:         log,
+		mqConn:                      mqConn,
+		handleDriverResponseUseCase: handleDriverResponseUseCase,
+		passengerWS:                 passengerWS,
+		log:                         log,
 	}
 }
 
@@ -171,49 +175,52 @@ func (c *DriverResponseConsumer) handleDriverResponse(ctx context.Context, msg a
 	}
 	rideID := parts[2]
 
-	if response.Accepted {
-		// Водитель принял поездку
-		c.log.Info(logger.Entry{
-			Action:  "driver_accepted_ride",
-			Message: fmt.Sprintf("driver %s accepted ride %s", response.DriverID, rideID),
+	// Вызываем use case для обработки ответа водителя
+	useCaseInput := in.HandleDriverResponseInput{
+		RideID:                  rideID,
+		DriverID:                response.DriverID,
+		Accepted:                response.Accepted,
+		EstimatedArrivalMinutes: response.EstimatedArrivalMinutes,
+	}
+
+	if response.DriverLocation != nil {
+		useCaseInput.DriverLocationLat = response.DriverLocation.Lat
+		useCaseInput.DriverLocationLng = response.DriverLocation.Lng
+	}
+
+	output, err := c.handleDriverResponseUseCase.Execute(ctx, useCaseInput)
+	if err != nil {
+		c.log.Error(logger.Entry{
+			Action:  "handle_driver_response_usecase_failed",
+			Message: err.Error(),
 			RideID:  rideID,
+			Error:   &logger.ErrObj{Msg: err.Error()},
 		})
+		return fmt.Errorf("execute use case: %w", err)
+	}
 
-		// TODO: Обновить статус ride в БД на DRIVER_ASSIGNED
-		// TODO: Сохранить driver_id в ride
-
-		// Отправляем уведомление пассажиру через WebSocket
-		// TODO: Получить passenger_id из ride и отправить конкретному пассажиру
-		// Формат уведомления:
-		// {
-		//   "type": "ride_matched",
-		//   "ride_id": "...",
-		//   "driver_id": "...",
-		//   "estimated_arrival_minutes": 5,
-		//   "driver_info": {...},
-		//   "driver_location": {...}
-		// }
-
+	if output.DriverAssigned {
+		// Водитель назначен - отправляем уведомление пассажиру через WebSocket
 		c.log.Info(logger.Entry{
-			Action:  "ride_match_notification_ready",
+			Action:  "sending_ride_matched_notification",
 			Message: fmt.Sprintf("driver matched for ride %s", rideID),
 			RideID:  rideID,
 			Additional: map[string]any{
-				"driver_id": response.DriverID,
-				"eta":       response.EstimatedArrivalMinutes,
+				"driver_id":    response.DriverID,
+				"passenger_id": output.PassengerID,
 			},
 		})
 
-	} else {
-		// Водитель отклонил поездку
-		c.log.Info(logger.Entry{
-			Action:  "driver_rejected_ride",
-			Message: fmt.Sprintf("driver %s rejected ride %s", response.DriverID, rideID),
-			RideID:  rideID,
-		})
-
-		// TODO: Попробовать найти другого водителя
-		// TODO: Если это был последний водитель - уведомить пассажира об отсутствии водителей
+		// TODO: Отправить WebSocket уведомление пассажиру
+		// notification := map[string]any{
+		//   "type": "ride_matched",
+		//   "ride_id": rideID,
+		//   "driver_id": response.DriverID,
+		//   "estimated_arrival_minutes": response.EstimatedArrivalMinutes,
+		//   "driver_info": response.DriverInfo,
+		//   "driver_location": response.DriverLocation,
+		// }
+		// c.passengerWS.SendToPassenger(output.PassengerID, notification)
 	}
 
 	return nil

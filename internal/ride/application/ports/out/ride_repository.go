@@ -25,4 +25,7 @@ type RideRepository interface {
 
 	// FindByStatus возвращает поездки с определенным статусом
 	FindByStatus(ctx context.Context, status string, limit int) ([]*domain.Ride, error)
+
+	// AssignDriver назначает водителя на поездку
+	AssignDriver(ctx context.Context, rideID string, driverID string) error
 }

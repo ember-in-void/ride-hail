@@ -204,7 +204,7 @@ SERVICE_MODE=admin ./bin/ridehail
 # Проверка здоровья всех сервисов
 curl http://localhost:3000/health  # Ride Service
 curl http://localhost:3001/health  # Driver Service
-curl http://localhost:3002/health  # Admin Service
+curl http://localhost:3004/health  # Admin Service
 
 # Ожидаемый ответ от каждого:
 # {"status":"ok","service":"ride"}
@@ -317,6 +317,63 @@ chmod +x scripts/test-e2e-ride-flow.sh
 10. → Ride Service получает ответ
 11. → Passenger получает уведомление
 
+### 5. 🎬 Demo: Полный цикл поездки (красивый вывод)
+
+**Новый красивый demo-скрипт с цветным выводом и детальным логированием!**
+
+```bash
+# Запустить красивую демонстрацию полного цикла
+chmod +x scripts/demo-full-ride-cycle.sh
+./scripts/demo-full-ride-cycle.sh
+```
+
+**Что показывает demo:**
+
+```
+🚗 RIDE-HAILING SYSTEM - FULL CYCLE DEMONSTRATION 🚗
+
+STEP 0:  ✓ Проверка доступности всех сервисов
+STEP 1:  ✓ Генерация тестовых UUID и данных
+STEP 2:  ✓ Создание JWT токенов (ADMIN, PASSENGER, DRIVER)
+STEP 3:  👤 Создание пассажира и 🚗 водителя через Admin API
+STEP 4:  🚗 Водитель выходит онлайн (статус → AVAILABLE)
+STEP 5:  📍 Обновление локации водителя (Almaty Central Park)
+STEP 6:  👤 Пассажир создает поездку (Central Park → Kok-Tobe)
+         🚀 RabbitMQ: ride.request.ECONOMY → driver_matching queue
+         📊 PostGIS: ST_DWithin(5km) - поиск водителей
+STEP 7:  🚗 Водитель получает и принимает предложение
+         🚀 RabbitMQ: driver.response → ride_service_driver_responses
+STEP 8:  ⏱ Водитель начинает поездку (статус → IN_PROGRESS)
+STEP 9:  📍 Симуляция движения с обновлением локации:
+         • 43.235, 76.885 - Moving towards destination (25.5 km/h)
+         • 43.230, 76.870 - Halfway there (35.2 km/h)
+         • 43.225, 76.860 - Almost arrived (28.7 km/h)
+         • 43.222, 76.851 - Arriving at destination (15.3 km/h)
+STEP 10: 💰 Водитель завершает поездку
+         Distance: 5.2 km | Duration: 18 min
+STEP 11: 📊 Проверка Admin Dashboard (метрики и активные поездки)
+
+✓ ВСЕ ЭТАПЫ УСПЕШНО ВЫПОЛНЕНЫ!
+```
+
+**Особенности demo-скрипта:**
+- 🎨 Красивый цветной вывод с эмодзи
+- 📝 Детальное логирование каждого шага
+- ⚡ Автоматическая проверка доступности сервисов
+- 🔍 Вывод всех созданных UUID для отладки
+- 📊 Финальная таблица с результатами тестирования
+- 🎯 Симуляция реального движения водителя
+- ✅ Проверка всех компонентов системы
+
+**Проверяемые компоненты:**
+- JWT Authentication (3 роли)
+- Admin Service (создание пользователей, метрики)
+- Driver Service (lifecycle, локация, PostGIS)
+- Ride Service (создание поездок, RabbitMQ)
+- RabbitMQ (3 exchanges, все queues)
+- PostGIS (ST_DWithin геопоиск в радиусе 5km)
+- WebSocket simulation (ride offers & responses)
+
 ---
 
 ## 📡 API Documentation
@@ -428,7 +485,7 @@ curl -X POST http://localhost:3001/drivers/driver-123/location \
 3. Все подписчики (Ride Service) получают обновление
 4. Пассажиры получают уведомление через WebSocket
 
-### Admin Service (http://localhost:3002)
+### Admin Service (http://localhost:3004)
 
 #### Endpoints
 
@@ -444,7 +501,7 @@ curl -X POST http://localhost:3001/drivers/driver-123/location \
 
 **Request:**
 ```bash
-curl -X POST http://localhost:3002/admin/users \
+curl -X POST http://localhost:3004/admin/users \
   -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -930,7 +987,7 @@ curl -u guest:guest http://localhost:15672/api/queues | jq
 # Все сервисы
 curl http://localhost:3000/health  # Ride Service
 curl http://localhost:3001/health  # Driver Service
-curl http://localhost:3002/health  # Admin Service
+curl http://localhost:3004/health  # Admin Service
 ```
 
 ### 3. Unit Tests
@@ -979,7 +1036,7 @@ ADMIN_TOKEN=$(go run cmd/generate-jwt/main.go \
   --ttl "24h" | grep "JWT:" | cut -d' ' -f2)
 
 # Создать пассажира
-curl -X POST http://localhost:3002/admin/users \
+curl -X POST http://localhost:3004/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -990,7 +1047,7 @@ curl -X POST http://localhost:3002/admin/users \
   }'
 
 # Создать водителя
-curl -X POST http://localhost:3002/admin/users \
+curl -X POST http://localhost:3004/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1162,7 +1219,7 @@ k6 run load-test.js
 # Health checks
 curl http://localhost:3000/health | jq
 curl http://localhost:3001/health | jq
-curl http://localhost:3002/health | jq
+curl http://localhost:3004/health | jq
 
 # RabbitMQ metrics
 curl -u guest:guest http://localhost:15672/api/overview | jq '.queue_totals'
@@ -1388,7 +1445,7 @@ make docker-up
 # Health checks
 curl http://localhost:3000/health | jq
 curl http://localhost:3001/health | jq
-curl http://localhost:3002/health | jq
+curl http://localhost:3004/health | jq
 
 # RabbitMQ metrics
 curl -u guest:guest http://localhost:15672/api/overview | jq '.queue_totals'
