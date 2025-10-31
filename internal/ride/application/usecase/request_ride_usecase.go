@@ -270,8 +270,14 @@ func calculateDuration(distanceKm float64) int {
 	return int(math.Ceil(durationHours * 60))
 }
 
-// generateRideNumber генерирует уникальный номер поездки
+// generateRideNumber генерирует уникальный номер поездки в формате RIDE_YYYYMMDD_HHMMSS_XXX
+// Формат согласно регламенту: RIDE_20241216_103000_001
 func generateRideNumber() string {
 	now := time.Now().UTC()
-	return fmt.Sprintf("RIDE-%s-%d", now.Format("20060102"), now.UnixNano()%1000000)
+	// Генерируем случайный суффикс от 000 до 999
+	randomSuffix := now.UnixNano() % 1000
+	return fmt.Sprintf("RIDE_%s_%s_%03d",
+		now.Format("20060102"), // YYYYMMDD
+		now.Format("150405"),   // HHMMSS
+		randomSuffix)           // XXX (000-999)
 }
