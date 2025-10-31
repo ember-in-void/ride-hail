@@ -49,9 +49,11 @@ func Run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// 4. Создаем use cases (Application)
 	createUserUC := usecase.NewCreateUserService(userRepo, log)
 	listUsersUC := usecase.NewListUsersService(userRepo, log)
+	getOverviewUC := usecase.NewGetOverviewService(userRepo, log)
+	getActiveRidesUC := usecase.NewGetActiveRidesService(userRepo, log)
 
 	// 5. Создаем HTTP handler (Adapter IN)
-	httpHandler := transport.NewHTTPHandler(createUserUC, listUsersUC, log)
+	httpHandler := transport.NewHTTPHandler(createUserUC, listUsersUC, getOverviewUC, getActiveRidesUC, log)
 
 	// 6. Настраиваем HTTP сервер
 	mux := http.NewServeMux()

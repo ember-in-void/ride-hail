@@ -16,21 +16,27 @@ const maxBodySize = 1 << 20 // 1MB
 
 // HTTPHandler обрабатывает HTTP запросы для Admin Service
 type HTTPHandler struct {
-	createUserUC in.CreateUserUseCase
-	listUsersUC  in.ListUsersUseCase
-	log          *logger.Logger
+	createUserUC     in.CreateUserUseCase
+	listUsersUC      in.ListUsersUseCase
+	getOverviewUC    in.GetOverviewUseCase
+	getActiveRidesUC in.GetActiveRidesUseCase
+	log              *logger.Logger
 }
 
 // NewHTTPHandler создает новый HTTP handler
 func NewHTTPHandler(
 	createUserUC in.CreateUserUseCase,
 	listUsersUC in.ListUsersUseCase,
+	getOverviewUC in.GetOverviewUseCase,
+	getActiveRidesUC in.GetActiveRidesUseCase,
 	log *logger.Logger,
 ) *HTTPHandler {
 	return &HTTPHandler{
-		createUserUC: createUserUC,
-		listUsersUC:  listUsersUC,
-		log:          log,
+		createUserUC:     createUserUC,
+		listUsersUC:      listUsersUC,
+		getOverviewUC:    getOverviewUC,
+		getActiveRidesUC: getActiveRidesUC,
+		log:              log,
 	}
 }
 
@@ -42,6 +48,8 @@ func (h *HTTPHandler) RegisterRoutes(mux *http.ServeMux, adminAuthMiddleware fun
 	// admin endpoints (требуют ADMIN роль)
 	mux.HandleFunc("POST /admin/users", adminAuthMiddleware(h.handleCreateUser))
 	mux.HandleFunc("GET /admin/users", adminAuthMiddleware(h.handleListUsers))
+	mux.HandleFunc("GET /admin/overview", adminAuthMiddleware(h.handleGetOverview))
+	mux.HandleFunc("GET /admin/rides/active", adminAuthMiddleware(h.handleGetActiveRides))
 }
 
 // handleHealth обрабатывает health check
@@ -199,4 +207,56 @@ func (h *HTTPHandler) respondJSON(w http.ResponseWriter, status int, data interf
 // respondError отправляет JSON с ошибкой
 func (h *HTTPHandler) respondError(w http.ResponseWriter, status int, message string) {
 	h.respondJSON(w, status, map[string]string{"error": message})
+}
+
+// handleGetOverview обрабатывает GET /admin/overview
+func (h *HTTPHandler) handleGetOverview(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Создаем input (пустой для overview)
+	input := in.GetOverviewInput{}
+
+	output, err := h.getOverviewUC.Execute(ctx, input)
+	if err != nil {
+		h.handleUseCaseError(w, err)
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, output)
+}
+
+// handleGetActiveRides обрабатывает GET /admin/rides/active
+func (h *HTTPHandler) handleGetActiveRides(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Извлекаем query параметры
+	query := r.URL.Query()
+
+	page := 1
+	if pageStr := query.Get("page"); pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+
+	pageSize := 20
+	if pageSizeStr := query.Get("page_size"); pageSizeStr != "" {
+		if ps, err := strconv.Atoi(pageSizeStr); err == nil && ps > 0 && ps <= 100 {
+			pageSize = ps
+		}
+	}
+
+	// Маппинг → Use Case Input
+	input := in.GetActiveRidesInput{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	output, err := h.getActiveRidesUC.Execute(ctx, input)
+	if err != nil {
+		h.handleUseCaseError(w, err)
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, output)
 }

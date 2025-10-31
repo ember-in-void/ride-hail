@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 	"errors"
+
+	"ridehail/internal/admin/application/ports/in"
 )
 
 var (
@@ -24,4 +26,16 @@ type Repository interface {
 
 	// Exists проверяет существование пользователя
 	Exists(ctx context.Context, userID string) (bool, error)
+
+	// GetSystemMetrics получает метрики системы для admin dashboard
+	GetSystemMetrics(ctx context.Context) (*in.SystemMetrics, error)
+
+	// GetDriverDistribution получает распределение водителей по типам транспорта
+	GetDriverDistribution(ctx context.Context) (map[string]int, error)
+
+	// GetHotspots получает горячие точки (зоны повышенного спроса)
+	GetHotspots(ctx context.Context) ([]in.Hotspot, error)
+
+	// GetActiveRides получает активные поездки с пагинацией
+	GetActiveRides(ctx context.Context, page, pageSize int) ([]in.ActiveRideInfo, int, error)
 }

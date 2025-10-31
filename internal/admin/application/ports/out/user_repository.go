@@ -3,6 +3,7 @@ package out
 import (
 	"context"
 
+	"ridehail/internal/admin/application/ports/in"
 	"ridehail/internal/admin/domain"
 )
 
@@ -25,6 +26,18 @@ type UserRepository interface {
 
 	// Delete удаляет пользователя (soft delete через status=BANNED или hard delete)
 	Delete(ctx context.Context, userID string) error
+
+	// GetSystemMetrics получает метрики системы для admin dashboard
+	GetSystemMetrics(ctx context.Context) (*in.SystemMetrics, error)
+
+	// GetDriverDistribution получает распределение водителей по типам транспорта
+	GetDriverDistribution(ctx context.Context) (map[string]int, error)
+
+	// GetHotspots получает горячие точки (зоны повышенного спроса)
+	GetHotspots(ctx context.Context) ([]in.Hotspot, error)
+
+	// GetActiveRides получает активные поездки с пагинацией
+	GetActiveRides(ctx context.Context, page, pageSize int) ([]in.ActiveRideInfo, int, error)
 }
 
 // ListUsersFilters — фильтры для списка пользователей
