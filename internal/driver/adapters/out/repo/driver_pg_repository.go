@@ -1,4 +1,4 @@
-package persistence
+package repo
 
 import (
 	"context"
@@ -99,22 +99,91 @@ func (r *driverPgRepository) UpdateRideStats(ctx context.Context, driverID strin
 	return nil
 }
 
-func (r *driverPgRepository) FindNearbyAvailableDrivers(
-	ctx context.Context,
-	lat, lng float64,
-	radiusKm float64,
-	vehicleType domain.VehicleType,
-	limit int,
-) ([]*out.DriverWithDistance, error) {
-	// PostGIS запрос согласно ТЗ
+// CreateSession создает новую сессию водителя
+func (r *driverPgRepository) CreateSession(ctx context.Context, session *domain.DriverSession) error {
 	query := `
-		SELECT d.id, d.license_number, d.vehicle_type, d.vehicle_attrs, d.rating, d.total_rides, d.total_earnings, d.status, d.is_verified, d.created_at, d.updated_at,
-		       c.latitude, c.longitude,
+		INSERT INTO driver_sessions (id, driver_id, started_at, total_rides, total_earnings)
+		VALUES ($1, $2, $3, $4, $5)
+	`
+
+	_, err := r.pool.Exec(ctx, query,
+		session.ID,
+		session.DriverID,
+		session.StartedAt,
+		session.TotalRides,
+		session.TotalEarnings,
+	)
+	if err != nil {
+		return fmt.Errorf("insert session: %w", err)
+	}
+
+	return nil
+}
+
+// GetActiveSession получает активную сессию водителя
+func (r *driverPgRepository) GetActiveSession(ctx context.Context, driverID string) (*domain.DriverSession, error) {
+	query := `
+		SELECT id, driver_id, started_at, ended_at, total_rides, total_earnings
+		FROM driver_sessions
+		WHERE driver_id = $1 AND ended_at IS NULL
+		ORDER BY started_at DESC
+		LIMIT 1
+	`
+
+	var s domain.DriverSession
+
+	err := r.pool.QueryRow(ctx, query, driverID).Scan(
+		&s.ID,
+		&s.DriverID,
+		&s.StartedAt,
+		&s.EndedAt,
+		&s.TotalRides,
+		&s.TotalEarnings,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, domain.ErrSessionNotFound
+		}
+		return nil, fmt.Errorf("query session: %w", err)
+	}
+
+	return &s, nil
+}
+
+// EndSession завершает текущую сессию водителя
+func (r *driverPgRepository) EndSession(ctx context.Context, sessionID string, totalRides int, totalEarnings float64) error {
+	query := `
+		UPDATE driver_sessions
+		SET ended_at = NOW(),
+		    total_rides = $1,
+		    total_earnings = $2
+		WHERE id = $3 AND ended_at IS NULL
+	`
+
+	result, err := r.pool.Exec(ctx, query, totalRides, totalEarnings, sessionID)
+	if err != nil {
+		return fmt.Errorf("end session: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return domain.ErrSessionNotFound
+	}
+
+	return nil
+}
+
+// FindNearbyAvailable находит доступных водителей рядом с точкой
+func (r *driverPgRepository) FindNearbyAvailable(ctx context.Context, lat, lng float64, vehicleType domain.VehicleType, maxDistanceKm float64) ([]*out.NearbyDriverDTO, error) {
+	// PostGIS запрос для поиска водителей в радиусе
+	query := `
+		SELECT d.id, u.email, d.rating, c.latitude, c.longitude,
 		       ST_Distance(
 		         ST_MakePoint(c.longitude, c.latitude)::geography,
 		         ST_MakePoint($1, $2)::geography
-		       ) / 1000 as distance_km
+		       ) / 1000 as distance_km,
+		       d.vehicle_type, d.vehicle_attrs
 		FROM drivers d
+		JOIN users u ON u.id = d.id
 		JOIN coordinates c ON c.entity_id = d.id
 		  AND c.entity_type = 'driver'
 		  AND c.is_current = true
@@ -127,56 +196,43 @@ func (r *driverPgRepository) FindNearbyAvailableDrivers(
 		        $4
 		      )
 		ORDER BY distance_km, d.rating DESC
-		LIMIT $5
+		LIMIT 10
 	`
 
-	radiusMeters := radiusKm * 1000
+	radiusMeters := maxDistanceKm * 1000
 
-	rows, err := r.pool.Query(ctx, query, lng, lat, vehicleType, radiusMeters, limit)
+	rows, err := r.pool.Query(ctx, query, lng, lat, vehicleType, radiusMeters)
 	if err != nil {
 		return nil, fmt.Errorf("query nearby drivers: %w", err)
 	}
 	defer rows.Close()
 
-	var results []*out.DriverWithDistance
+	var results []*out.NearbyDriverDTO
 
 	for rows.Next() {
-		var d domain.Driver
+		var dto out.NearbyDriverDTO
 		var vehicleAttrsJSON []byte
-		var distanceKm float64
-		var latitude, longitude float64
 
 		if err := rows.Scan(
-			&d.ID,
-			&d.LicenseNumber,
-			&d.VehicleType,
+			&dto.DriverID,
+			&dto.Email,
+			&dto.Rating,
+			&dto.Latitude,
+			&dto.Longitude,
+			&dto.DistanceKm,
+			&dto.VehicleType,
 			&vehicleAttrsJSON,
-			&d.Rating,
-			&d.TotalRides,
-			&d.TotalEarnings,
-			&d.Status,
-			&d.IsVerified,
-			&d.CreatedAt,
-			&d.UpdatedAt,
-			&latitude,
-			&longitude,
-			&distanceKm,
 		); err != nil {
 			return nil, fmt.Errorf("scan driver row: %w", err)
 		}
 
 		if len(vehicleAttrsJSON) > 0 {
-			if err := json.Unmarshal(vehicleAttrsJSON, &d.VehicleAttrs); err != nil {
+			if err := json.Unmarshal(vehicleAttrsJSON, &dto.Vehicle); err != nil {
 				return nil, fmt.Errorf("unmarshal vehicle_attrs: %w", err)
 			}
 		}
 
-		results = append(results, &out.DriverWithDistance{
-			Driver:     &d,
-			DistanceKm: distanceKm,
-			Latitude:   latitude,
-			Longitude:  longitude,
-		})
+		results = append(results, &dto)
 	}
 
 	if err := rows.Err(); err != nil {

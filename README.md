@@ -185,6 +185,26 @@ ride-hail/
 make test
 ```
 
+### Driver Service Testing ⭐
+
+Полная документация: [TESTING_GUIDE.md](TESTING_GUIDE.md)
+
+```bash
+# 1. Создать тестового водителя
+./scripts/setup-test-driver.sh
+
+# 2. Запустить полное тестирование (8 тестов)
+export DRIVER_ID="your-driver-id"
+./scripts/test-driver-api.sh
+```
+
+Доступные скрипты:
+- `setup-test-driver.sh` - создание тестового водителя
+- `generate-driver-token.sh` - генерация JWT токена
+- `test-driver-api.sh` - автоматическое тестирование API (8 тестов)
+- `test-driver-workflow.sh` - полный workflow водителя
+- `driver-api-helpers.sh` - интерактивные функции
+
 ### Интеграционные тесты
 
 ```bash

@@ -30,19 +30,29 @@ func NewUserPgRepository(pool *pgxpool.Pool, log *logger.Logger) *UserPgReposito
 	}
 }
 
-// Create создает нового пользователя
+// Create создает нового пользователя (и driver record если роль DRIVER)
 func (r *UserPgRepository) Create(ctx context.Context, user *domain.User) error {
 	attrsJSON, err := json.Marshal(user.Attrs)
 	if err != nil {
 		return fmt.Errorf("marshal attrs: %w", err)
 	}
 
-	query := `
+	// Начинаем транзакцию
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+	defer func() {
+		_ = tx.Rollback(ctx) // Откатываем если не закоммитили
+	}()
+
+	// Создаем пользователя
+	userQuery := `
 		INSERT INTO users (id, email, role, status, password_hash, attrs, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 
-	_, err = r.pool.Exec(ctx, query,
+	_, err = tx.Exec(ctx, userQuery,
 		user.ID,
 		user.Email,
 		user.Role,
@@ -62,6 +72,57 @@ func (r *UserPgRepository) Create(ctx context.Context, user *domain.User) error 
 			}
 		}
 		return fmt.Errorf("insert user: %w", err)
+	}
+
+	// Если роль DRIVER, создаем запись в таблице drivers
+	if user.Role == "DRIVER" {
+		licenseNumber := "UNKNOWN"
+		vehicleType := "ECONOMY"
+		var vehicleAttrs map[string]interface{}
+
+		// Извлекаем license_number и vehicle_type из attrs
+		if user.Attrs != nil {
+			if ln, ok := user.Attrs["license_number"].(string); ok && ln != "" {
+				licenseNumber = ln
+			}
+			if vt, ok := user.Attrs["vehicle_type"].(string); ok && vt != "" {
+				vehicleType = vt
+			}
+			// Собираем vehicle_attrs из остальных полей
+			vehicleAttrs = make(map[string]interface{})
+			for k, v := range user.Attrs {
+				if strings.HasPrefix(k, "vehicle_") && k != "vehicle_type" {
+					vehicleAttrs[strings.TrimPrefix(k, "vehicle_")] = v
+				}
+			}
+		}
+
+		vehicleAttrsJSON, err := json.Marshal(vehicleAttrs)
+		if err != nil {
+			return fmt.Errorf("marshal vehicle attrs: %w", err)
+		}
+
+		driverQuery := `
+			INSERT INTO drivers (id, license_number, vehicle_type, vehicle_attrs, status, is_verified, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, 'OFFLINE', true, $5, $6)
+		`
+
+		_, err = tx.Exec(ctx, driverQuery,
+			user.ID,
+			licenseNumber,
+			vehicleType,
+			vehicleAttrsJSON,
+			user.CreatedAt,
+			user.UpdatedAt,
+		)
+		if err != nil {
+			return fmt.Errorf("insert driver: %w", err)
+		}
+	}
+
+	// Коммитим транзакцию
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
 	}
 
 	return nil

@@ -1,26 +1,34 @@
 package transport
 
-// GoOnlineRequest — HTTP request для перехода в онлайн
+// GoOnlineRequest — запрос на переход в онлайн
 type GoOnlineRequest struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
 
-// GoOfflineResponse — HTTP response для перехода в офлайн
-type GoOfflineResponse struct {
-	SessionID      string         `json:"session_id"`
-	Status         string         `json:"status"`
-	SessionSummary SessionSummary `json:"session_summary"`
-	Message        string         `json:"message"`
+// GoOnlineResponse — ответ на переход в онлайн
+type GoOnlineResponse struct {
+	Status    string `json:"status"`
+	SessionID string `json:"session_id"`
+	Message   string `json:"message"`
 }
 
-type SessionSummary struct {
+// GoOfflineResponse — ответ на переход в офлайн
+type GoOfflineResponse struct {
+	Status         string                 `json:"status"`
+	SessionID      string                 `json:"session_id"`
+	SessionSummary SessionSummaryResponse `json:"session_summary"`
+	Message        string                 `json:"message"`
+}
+
+// SessionSummaryResponse — сводка по сессии
+type SessionSummaryResponse struct {
 	DurationHours  float64 `json:"duration_hours"`
 	RidesCompleted int     `json:"rides_completed"`
 	Earnings       float64 `json:"earnings"`
 }
 
-// UpdateLocationRequest — HTTP request для обновления локации
+// UpdateLocationRequest — запрос на обновление локации
 type UpdateLocationRequest struct {
 	Latitude       float64 `json:"latitude"`
 	Longitude      float64 `json:"longitude"`
@@ -29,14 +37,28 @@ type UpdateLocationRequest struct {
 	HeadingDegrees float64 `json:"heading_degrees,omitempty"`
 }
 
-// StartRideRequest — HTTP request для начала поездки
+// UpdateLocationResponse — ответ на обновление локации
+type UpdateLocationResponse struct {
+	CoordinateID string `json:"coordinate_id"`
+	UpdatedAt    string `json:"updated_at"`
+}
+
+// StartRideRequest — запрос на начало поездки
 type StartRideRequest struct {
 	RideID    string  `json:"ride_id"`
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
 
-// CompleteRideRequest — HTTP request для завершения поездки
+// StartRideResponse — ответ на начало поездки
+type StartRideResponse struct {
+	RideID    string `json:"ride_id"`
+	Status    string `json:"status"`
+	StartedAt string `json:"started_at"`
+	Message   string `json:"message"`
+}
+
+// CompleteRideRequest — запрос на завершение поездки
 type CompleteRideRequest struct {
 	RideID                string  `json:"ride_id"`
 	FinalLatitude         float64 `json:"final_latitude"`
@@ -45,8 +67,18 @@ type CompleteRideRequest struct {
 	ActualDurationMinutes int     `json:"actual_duration_minutes"`
 }
 
+// CompleteRideResponse — ответ на завершение поездки
+type CompleteRideResponse struct {
+	RideID         string  `json:"ride_id"`
+	Status         string  `json:"status"`
+	CompletedAt    string  `json:"completed_at"`
+	DriverEarnings float64 `json:"driver_earnings"`
+	Message        string  `json:"message"`
+}
+
 // ErrorResponse — стандартный ответ об ошибке
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message"`
+	Code    int    `json:"code"`
 }
