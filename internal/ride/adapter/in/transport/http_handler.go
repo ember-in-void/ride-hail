@@ -28,12 +28,12 @@ func NewHTTPHandler(requestRideUC in.RequestRideUseCase, log *logger.Logger) *HT
 }
 
 // RegisterRoutes регистрирует все HTTP маршруты
-func (h *HTTPHandler) RegisterRoutes(mux *http.ServeMux, authMiddleware func(http.HandlerFunc) http.HandlerFunc) {
+func (h *HTTPHandler) RegisterRoutes(mux *http.ServeMux, authMiddleware Middleware) {
 	// liveness
 	mux.HandleFunc("GET /health", h.handleHealth)
 
 	// ride request
-	mux.HandleFunc("POST /rides", authMiddleware(h.handleRequestRide))
+	mux.Handle("POST /rides", authMiddleware(http.HandlerFunc(h.handleRequestRide)))
 }
 
 // handleHealth обрабатывает health check

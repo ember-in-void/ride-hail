@@ -20,10 +20,14 @@ const (
 	ContextKeyUserRole  contextKey = "user_role"
 )
 
+// Middleware — стандартная сигнатура middleware в стиле net/http
+// Принимает http.Handler и возвращает обёрнутый http.Handler
+type Middleware func(http.Handler) http.Handler
+
 // JWTMiddleware создает middleware для валидации JWT токенов + проверки пользователя в БД
-func JWTMiddleware(jwtService *auth.JWTService, userRepo user.Repository, log *logger.Logger) func(http.HandlerFunc) http.HandlerFunc {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
+func JWTMiddleware(jwtService *auth.JWTService, userRepo user.Repository, log *logger.Logger) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
 			// Извлекаем токен из заголовка Authorization
@@ -140,7 +144,7 @@ func JWTMiddleware(jwtService *auth.JWTService, userRepo user.Repository, log *l
 
 			// Передаем управление следующему обработчику
 			next.ServeHTTP(w, r.WithContext(ctx))
-		}
+		})
 	}
 }
 

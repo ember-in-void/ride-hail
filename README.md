@@ -1,71 +1,71 @@
 # 🚗 Ride-Hailing System
 
-> Полнофункциональная микросервисная система вызова такси с real-time коммуникацией, геопространственным матчингом и event-driven архитектурой.
+> Production-ready microservices-based ride-hailing system with real-time communication, geospatial matching, and event-driven architecture.
 
 [![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat&logo=postgresql)](https://postgresql.org)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600?style=flat&logo=rabbitmq)](https://rabbitmq.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 📋 Содержание
+## 📋 Table of Contents
 
-- [Обзор](#-обзор)
-- [Архитектура](#️-архитектура)
-- [📚 Документация](#-документация-для-разработчиков)
-- [Быстрый старт](#-быстрый-старт)
-- [Проверка работы](#-проверка-работы)
+- [Overview](#-overview)
+- [Architecture](#️-architecture)
+- [📚 Documentation](#-developer-documentation)
+- [Quick Start](#-quick-start)
+- [System Verification](#-system-verification)
 - [API Documentation](#-api-documentation)
 - [WebSocket](#-websocket)
 - [RabbitMQ](#-rabbitmq)
-- [База данных](#️-база-данных)
-- [Тестирование](#-тестирование)
+- [Database](#️-database)
+- [Testing](#-testing)
 - [Troubleshooting](#-troubleshooting)
 
 ---
 
-## 🌟 Обзор
+## 🌟 Overview
 
-**Ride-Hailing System** — это production-ready backend для системы вызова такси, реализованный с использованием современных архитектурных паттернов и технологий.
+**Ride-Hailing System** is a production-ready backend for a taxi/rideshare platform, built using modern architectural patterns and technologies.
 
-### Ключевые возможности
+### Key Features
 
-✨ **Real-time коммуникация**
-- WebSocket соединения для пассажиров и водителей
-- Мгновенные уведомления о матчинге
-- Live отслеживание локации водителя
+✨ **Real-time Communication**
+- WebSocket connections for passengers and drivers
+- Instant matching notifications
+- Live driver location tracking
 
-🗺️ **Геопространственный матчинг**
-- PostGIS для поиска ближайших водителей
-- Radius search (5km) с ST_DWithin
-- Оптимизация через GIST индексы
+🗺️ **Geospatial Matching**
+- PostGIS for finding nearest drivers
+- Radius search (5km) with ST_DWithin
+- Optimization through GIST indexes
 
 📨 **Event-Driven Architecture**
-- RabbitMQ для асинхронной коммуникации
-- Topic и Fanout exchanges
-- Автоматический retry и error handling
+- RabbitMQ for asynchronous communication
+- Topic and Fanout exchanges
+- Automatic retry and error handling
 
 🏗️ **Clean Architecture**
 - Hexagonal Pattern (Ports & Adapters)
 - SOLID principles
-- Полная независимость от frameworks
+- Complete framework independence
 
 ---
 
-## 📚 Документация для разработчиков
+## 📚 Developer Documentation
 
-### 🎓 Для начинающих
+### 🎓 For Beginners
 
-Если вы только начинаете разбираться в проекте, рекомендуем изучить документацию в таком порядке:
+If you're new to the project, we recommend studying the documentation in this order:
 
-1. **[ARCHITECTURE_FLOW.md](docs/ARCHITECTURE_FLOW.md)** (450+ строк) ⭐ **НАЧНИТЕ ЗДЕСЬ!**
-   - 🏠 Метафора Clean Architecture с домом
-   - 📊 Визуальные диаграммы потока данных
-   - 👣 Пошаговое выполнение кода (7 шагов)
-   - 🛡️ Механизмы защиты от ошибок
-   - 📖 Глоссарий технических терминов
-   - 💡 Советы по отладке
+1. **[ARCHITECTURE_FLOW.md](docs/ARCHITECTURE_FLOW.md)** (450+ lines) ⭐ **START HERE!**
+   - 🏠 Clean Architecture house metaphor
+   - 📊 Visual data flow diagrams
+   - 👣 Step-by-step code execution (7 steps)
+   - 🛡️ Error protection mechanisms
+   - 📖 Technical terms glossary
+   - 💡 Debugging tips
 
-2. **[DIAGRAMS.md](docs/DIAGRAMS.md)** (300+ строк)
+2. **[DIAGRAMS.md](docs/DIAGRAMS.md)** (300+ lines)
    - 🔄 Sequence Diagram (Mermaid)
    - 🏗️ Component Diagram
    - 📈 Data Flow Diagram
@@ -73,37 +73,37 @@
    - 🛡️ Race Condition Prevention
    - 🗄️ Database Schema
 
-3. **Комментарии в коде** (500+ строк)
-   - Все критические файлы имеют подробные русские комментарии
-   - Объяснения "что", "почему" и "как"
-   - Примеры использования
-   - Пошаговые разборы (ШАГ 1, ШАГ 2, ...)
+3. **Code Comments** (500+ lines)
+   - All critical files have detailed comments
+   - Explanations of "what", "why", and "how"
+   - Usage examples
+   - Step-by-step breakdowns (STEP 1, STEP 2, ...)
 
-### 🏗️ Для опытных разработчиков
+### 🏗️ For Experienced Developers
 
-4. **[CODE_STANDARDS.md](docs/CODE_STANDARDS.md)** (400+ строк)
-   - 🎯 Clean Architecture принципы
-   - 📝 SOLID на практике
-   - ⚠️ Обработка ошибок
-   - 🧪 Примеры тестов
-   - ✅ Чек-лист перед коммитом
+4. **[CODE_STANDARDS.md](docs/CODE_STANDARDS.md)** (400+ lines)
+   - 🎯 Clean Architecture principles
+   - 📝 SOLID in practice
+   - ⚠️ Error handling
+   - 🧪 Test examples
+   - ✅ Pre-commit checklist
 
 5. **[DOCUMENTATION_SUMMARY.md](docs/DOCUMENTATION_SUMMARY.md)**
-   - 📊 Статистика документации
-   - ✅ Что было сделано
-   - 🚀 Следующие шаги
+   - 📊 Documentation statistics
+   - ✅ What has been done
+   - 🚀 Next steps
 
-### 📖 Дополнительная документация
+### 📖 Additional Documentation
 
-- **[docs_architecture.md](docs/docs_architecture.md)** - Техническая архитектура
-- **[admin_api.md](docs/admin_api.md)** - API администратора
-- **[INTEGRATION.md](docs/INTEGRATION.md)** - Интеграция компонентов
-- **[reglament.md](docs/reglament.md)** - Регламент проекта
+- **[docs_architecture.md](docs/docs_architecture.md)** - Technical architecture
+- **[admin_api.md](docs/admin_api.md)** - Admin API
+- **[INTEGRATION.md](docs/INTEGRATION.md)** - Component integration
+- **[reglament.md](docs/reglament.md)** - Project regulations
 
 ---
 
 
-### Технологический стек
+### Technology Stack
 
 **Backend:**
 - Go 1.24+
@@ -120,9 +120,9 @@
 
 ---
 
-## 🏗️ Архитектура
+## 🏗️ Architecture
 
-### Микросервисы
+### Microservices
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -151,117 +151,117 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Компоненты системы
+### System Components
 
-#### 1. **Ride Service** (порт 3000)
-- Управление поездками
-- WebSocket для пассажиров
+#### 1. **Ride Service** (port 3000)
+- Ride management
+- WebSocket for passengers
 - RabbitMQ consumers (location updates, driver responses)
-- REST API для создания поездок
+- REST API for ride creation
 
-#### 2. **Driver Service** (порт 3001)
-- Управление водителями
-- WebSocket для водителей
+#### 2. **Driver Service** (port 3001)
+- Driver management
+- WebSocket for drivers
 - PostGIS matching algorithm
 - RabbitMQ consumers (ride requests)
 - Location tracking
 
-#### 3. **Admin Service** (порт 3002)
-- Административная панель
-- Управление пользователями
-- Статистика и аналитика
+#### 3. **Admin Service** (port 3002)
+- Administrative dashboard
+- User management
+- Statistics and analytics
 
 #### 4. **PostgreSQL + PostGIS**
-- Основная база данных
-- Геопространственные запросы
-- Хранение rides, drivers, coordinates
+- Main database
+- Geospatial queries
+- Storage for rides, drivers, coordinates
 
 #### 5. **RabbitMQ**
 - Message broker
 - 3 exchanges: ride_topic, driver_topic, location_fanout
-- Event-driven коммуникация между сервисами
+- Event-driven communication between services
 
 ---
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### Предварительные требования
+### Prerequisites
 
-- Go 1.24+ ([установка](https://golang.org/dl/))
-- Docker и Docker Compose ([установка](https://docs.docker.com/get-docker/))
-- jq для тестовых скриптов (опционально)
+- Go 1.24+ ([installation](https://golang.org/dl/))
+- Docker and Docker Compose ([installation](https://docs.docker.com/get-docker/))
+- jq for test scripts (optional)
 
-### Шаг 1: Клонирование репозитория
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/ember-in-void/ride-hail.git
 cd ride-hail
 ```
 
-### Шаг 2: Запуск инфраструктуры
+### Step 2: Start Infrastructure
 
 ```bash
 cd deployments
 docker compose up -d
 ```
 
-Это запустит:
-- ✅ PostgreSQL на порту 5432
-- ✅ RabbitMQ на портах 5672 (AMQP) и 15672 (Management UI)
+This will start:
+- ✅ PostgreSQL on port 5432
+- ✅ RabbitMQ on ports 5672 (AMQP) and 15672 (Management UI)
 
-Проверка статуса:
+Check status:
 ```bash
 docker compose ps
 
-# Должны быть запущены:
+# Should be running:
 # ridehail-postgres
 # ridehail-rabbitmq
 ```
 
-### Шаг 3: Сборка проекта
+### Step 3: Build the Project
 
 ```bash
-cd ..  # вернуться в корень проекта
+cd ..  # return to project root
 go build -o bin/ridehail ./main.go
 ```
 
-Проверка сборки:
+Verify build:
 ```bash
 ls -lh bin/ridehail
-# Должен быть создан исполняемый файл ~16MB
+# Should create an executable file ~16MB
 ```
 
-### Шаг 4: Запуск сервисов
+### Step 4: Start Services
 
-Откройте **3 терминала** и запустите каждый сервис:
+Open **3 terminals** and start each service:
 
 **Terminal 1 - Ride Service:**
 ```bash
 ./bin/ridehail
-# Запустится на порту 3000
+# Will start on port 3000
 ```
 
 **Terminal 2 - Driver Service:**
 ```bash
 SERVICE_MODE=driver ./bin/ridehail
-# Запустится на порту 3001
+# Will start on port 3001
 ```
 
 **Terminal 3 - Admin Service:**
 ```bash
 SERVICE_MODE=admin ./bin/ridehail
-# Запустится на порту 3002
+# Will start on port 3002
 ```
 
-### Шаг 5: Проверка работы
+### Step 5: Verify Operation
 
 ```bash
-# Проверка здоровья всех сервисов
+# Check health of all services
 curl http://localhost:3000/health  # Ride Service
 curl http://localhost:3001/health  # Driver Service
 curl http://localhost:3004/health  # Admin Service
 
-# Ожидаемый ответ от каждого:
+# Expected response from each:
 # {"status":"ok","service":"ride"}
 # {"status":"ok","service":"driver"}
 # {"status":"ok","service":"admin"}
@@ -269,57 +269,57 @@ curl http://localhost:3004/health  # Admin Service
 
 ---
 
-## ✅ Проверка работы
+## ✅ System Verification
 
-### 1. Проверка инфраструктуры
+### 1. Infrastructure Testing
 
 #### PostgreSQL
 ```bash
-# Подключение к базе данных
+# Connect to database
 docker exec -it ridehail-postgres psql -U ridehail_user -d ridehail_db
 
-# Проверка PostGIS
+# Check PostGIS
 ridehail_db=# SELECT PostGIS_version();
-# Должна показать версию PostGIS
+# Should show PostGIS version
 
-# Проверка таблиц
+# Check tables
 ridehail_db=# \dt
-# Список таблиц: users, drivers, rides, coordinates, location_history
+# Table list: users, drivers, rides, coordinates, location_history
 
-# Проверка индексов
+# Check indexes
 ridehail_db=# \di
-# Должен быть idx_coordinates_geography (GIST)
+# Should have idx_coordinates_geography (GIST)
 
-# Выход
+# Exit
 ridehail_db=# \q
 ```
 
 #### RabbitMQ
 ```bash
-# Открыть Management UI в браузере
+# Open Management UI in browser
 # http://localhost:15672
 # Login: guest / Password: guest
 
-# Проверить exchanges:
+# Check exchanges:
 # - ride_topic (type: topic)
 # - driver_topic (type: topic)
 # - location_fanout (type: fanout)
 
-# Проверить queues:
+# Check queues:
 # - driver_matching
 # - ride_service_driver_responses
 # - ride_service_locations
 ```
 
-### 2. Проверка WebSocket соединений
+### 2. WebSocket Connection Testing
 
 ```bash
-# Запустить автоматический тест
+# Run automatic test
 chmod +x scripts/test-websocket.sh
 ./scripts/test-websocket.sh
 ```
 
-Ожидаемый результат:
+Expected output:
 ```
 ========================================
 Testing WebSocket Connections
@@ -336,97 +336,97 @@ Testing WebSocket Connections
 ========================================
 ```
 
-### 3. Проверка Driver API
+### 3. Driver API Testing
 
 ```bash
-# Запустить полный тест Driver Service
+# Run full Driver Service test
 chmod +x scripts/test-driver-api.sh
 ./scripts/test-driver-api.sh
 ```
 
-Этот тест проверяет:
-1. ✅ Создание водителя через Admin API
+This test verifies:
+1. ✅ Driver creation via Admin API
 2. ✅ GoOnline endpoint
-3. ✅ UpdateLocation с PostGIS
-4. ✅ Location публикация в RabbitMQ
+3. ✅ UpdateLocation with PostGIS
+4. ✅ Location publishing to RabbitMQ
 5. ✅ GoOffline endpoint
 
-### 4. End-to-End тест полного флоу
+### 4. End-to-End Full Flow Test
 
 ```bash
-# Запустить E2E тест
+# Run E2E test
 chmod +x scripts/test-e2e-ride-flow.sh
 ./scripts/test-e2e-ride-flow.sh
 ```
 
-Этот тест проверяет полный цикл:
-1. ✅ Генерация JWT токенов для пассажира и водителя
-2. ✅ Создание пользователей в БД
-3. ✅ Водитель выходит онлайн
-4. ✅ Водитель обновляет локацию (Moscow: 55.7558, 37.6173)
-5. ✅ Пассажир создает поездку (Red Square → Kremlin)
-6. ✅ Ride Service публикует в RabbitMQ
-7. → Driver Service находит водителя с PostGIS (5km radius)
-8. → Driver получает offer через WebSocket
-9. → Driver отвечает через WebSocket
-10. → Ride Service получает ответ
-11. → Passenger получает уведомление
+This test verifies the complete cycle:
+1. ✅ JWT token generation for passenger and driver
+2. ✅ User creation in database
+3. ✅ Driver goes online
+4. ✅ Driver updates location (Moscow: 55.7558, 37.6173)
+5. ✅ Passenger creates ride (Red Square → Kremlin)
+6. ✅ Ride Service publishes to RabbitMQ
+7. → Driver Service finds driver with PostGIS (5km radius)
+8. → Driver receives offer via WebSocket
+9. → Driver responds via WebSocket
+10. → Ride Service receives response
+11. → Passenger receives notification
 
-### 5. 🎬 Demo: Полный цикл поездки (красивый вывод)
+### 5. 🎬 Demo: Full Ride Cycle (Beautiful Output)
 
-**Новый красивый demo-скрипт с цветным выводом и детальным логированием!**
+**New beautiful demo script with colored output and detailed logging!**
 
 ```bash
-# Запустить красивую демонстрацию полного цикла
+# Run beautiful full cycle demonstration
 chmod +x scripts/demo-full-ride-cycle.sh
 ./scripts/demo-full-ride-cycle.sh
 ```
 
-**Что показывает demo:**
+**What the demo shows:**
 
 ```
 🚗 RIDE-HAILING SYSTEM - FULL CYCLE DEMONSTRATION 🚗
 
-STEP 0:  ✓ Проверка доступности всех сервисов
-STEP 1:  ✓ Генерация тестовых UUID и данных
-STEP 2:  ✓ Создание JWT токенов (ADMIN, PASSENGER, DRIVER)
-STEP 3:  👤 Создание пассажира и 🚗 водителя через Admin API
-STEP 4:  🚗 Водитель выходит онлайн (статус → AVAILABLE)
-STEP 5:  📍 Обновление локации водителя (Almaty Central Park)
-STEP 6:  👤 Пассажир создает поездку (Central Park → Kok-Tobe)
+STEP 0:  ✓ Checking availability of all services
+STEP 1:  ✓ Generating test UUIDs and data
+STEP 2:  ✓ Creating JWT tokens (ADMIN, PASSENGER, DRIVER)
+STEP 3:  👤 Creating passenger and 🚗 driver via Admin API
+STEP 4:  🚗 Driver goes online (status → AVAILABLE)
+STEP 5:  📍 Updating driver location (Almaty Central Park)
+STEP 6:  👤 Passenger creates ride (Central Park → Kok-Tobe)
          🚀 RabbitMQ: ride.request.ECONOMY → driver_matching queue
-         📊 PostGIS: ST_DWithin(5km) - поиск водителей
-STEP 7:  🚗 Водитель получает и принимает предложение
+         📊 PostGIS: ST_DWithin(5km) - driver search
+STEP 7:  🚗 Driver receives and accepts offer
          🚀 RabbitMQ: driver.response → ride_service_driver_responses
-STEP 8:  ⏱ Водитель начинает поездку (статус → IN_PROGRESS)
-STEP 9:  📍 Симуляция движения с обновлением локации:
+STEP 8:  ⏱ Driver starts ride (status → IN_PROGRESS)
+STEP 9:  📍 Movement simulation with location updates:
          • 43.235, 76.885 - Moving towards destination (25.5 km/h)
          • 43.230, 76.870 - Halfway there (35.2 km/h)
          • 43.225, 76.860 - Almost arrived (28.7 km/h)
          • 43.222, 76.851 - Arriving at destination (15.3 km/h)
-STEP 10: 💰 Водитель завершает поездку
+STEP 10: 💰 Driver completes ride
          Distance: 5.2 km | Duration: 18 min
-STEP 11: 📊 Проверка Admin Dashboard (метрики и активные поездки)
+STEP 11: 📊 Checking Admin Dashboard (metrics and active rides)
 
-✓ ВСЕ ЭТАПЫ УСПЕШНО ВЫПОЛНЕНЫ!
+✓ ALL STEPS SUCCESSFULLY COMPLETED!
 ```
 
-**Особенности demo-скрипта:**
-- 🎨 Красивый цветной вывод с эмодзи
-- 📝 Детальное логирование каждого шага
-- ⚡ Автоматическая проверка доступности сервисов
-- 🔍 Вывод всех созданных UUID для отладки
-- 📊 Финальная таблица с результатами тестирования
-- 🎯 Симуляция реального движения водителя
-- ✅ Проверка всех компонентов системы
+**Demo script features:**
+- 🎨 Beautiful colored output with emojis
+- 📝 Detailed logging of each step
+- ⚡ Automatic service availability checks
+- 🔍 Output of all created UUIDs for debugging
+- 📊 Final table with test results
+- 🎯 Real driver movement simulation
+- ✅ Verification of all system components
 
-**Проверяемые компоненты:**
-- JWT Authentication (3 роли)
-- Admin Service (создание пользователей, метрики)
-- Driver Service (lifecycle, локация, PostGIS)
-- Ride Service (создание поездок, RabbitMQ)
-- RabbitMQ (3 exchanges, все queues)
-- PostGIS (ST_DWithin геопоиск в радиусе 5km)
+**Components tested:**
+- JWT Authentication (3 roles)
+- Admin Service (user creation, metrics)
+- Driver Service (lifecycle, location, PostGIS)
+- Ride Service (ride creation, RabbitMQ)
+- RabbitMQ (3 exchanges, all queues)
+- PostGIS (ST_DWithin geosearch within 5km radius)
 - WebSocket simulation (ride offers & responses)
 
 ---
@@ -435,17 +435,15 @@ STEP 11: 📊 Проверка Admin Dashboard (метрики и активны
 
 ### Ride Service (http://localhost:3000)
 
-### Ride Service (http://localhost:3000)
-
 #### Endpoints
 
 | Method | Path | Description | Auth |
 |--------|------|-------------|------|
 | GET | `/health` | Health check | No |
-| POST | `/rides` | Создать поездку | JWT (PASSENGER/ADMIN) |
-| GET | `/ws` | WebSocket для пассажиров | JWT |
+| POST | `/rides` | Create ride | JWT (PASSENGER/ADMIN) |
+| GET | `/ws` | WebSocket for passengers | JWT |
 
-#### POST /rides - Создание поездки
+#### POST /rides - Create Ride
 
 **Request:**
 ```bash
@@ -490,7 +488,7 @@ curl -X POST http://localhost:3000/rides \
 | POST | `/drivers/{id}/complete` | Завершить поездку | JWT (DRIVER) |
 | GET | `/ws` | WebSocket для водителей | JWT |
 
-#### POST /drivers/{id}/online - Выход онлайн
+#### POST /drivers/{id}/online - Go Online
 
 **Request:**
 ```bash
@@ -509,7 +507,7 @@ curl -X POST http://localhost:3001/drivers/driver-123/online \
 }
 ```
 
-#### POST /drivers/{id}/location - Обновление локации
+#### POST /drivers/{id}/location - Update Location
 
 **Request:**
 ```bash
@@ -534,11 +532,11 @@ curl -X POST http://localhost:3001/drivers/driver-123/location \
 }
 ```
 
-**Что происходит:**
-1. Локация сохраняется в PostgreSQL с PostGIS
-2. Публикуется в RabbitMQ exchange `location_fanout`
-3. Все подписчики (Ride Service) получают обновление
-4. Пассажиры получают уведомление через WebSocket
+**What happens:**
+1. Location is saved in PostgreSQL with PostGIS
+2. Published to RabbitMQ exchange `location_fanout`
+3. All subscribers (Ride Service) receive the update
+4. Passengers receive notification via WebSocket
 
 ### Admin Service (http://localhost:3004)
 
@@ -549,10 +547,10 @@ curl -X POST http://localhost:3001/drivers/driver-123/location \
 | GET | `/health` | Health check | No |
 | POST | `/admin/users` | Создать пользователя | JWT (ADMIN) |
 | GET | `/admin/users` | Список пользователей | JWT (ADMIN) |
-| GET | `/admin/overview` | Обзор системы | JWT (ADMIN) |
-| GET | `/admin/rides/active` | Активные поездки | JWT (ADMIN) |
+| GET | `/admin/overview` | System overview | JWT (ADMIN) |
+| GET | `/admin/rides/active` | Active rides | JWT (ADMIN) |
 
-#### POST /admin/users - Создание пользователя
+#### POST /admin/users - Create User
 
 **Request:**
 ```bash
@@ -581,59 +579,59 @@ curl -X POST http://localhost:3004/admin/users \
 
 ## 🔐 JWT Authentication
 
-### Генерация токенов
+### Token Generation
 
 ```bash
-# Пассажир
+# Passenger
 go run cmd/generate-jwt/main.go \
   --user-id "passenger-123" \
   --role "PASSENGER" \
   --ttl "24h"
 
-# Водитель
+# Driver
 go run cmd/generate-jwt/main.go \
   --user-id "driver-456" \
   --role "DRIVER" \
   --ttl "24h"
 
-# Администратор
+# Administrator
 go run cmd/generate-jwt/main.go \
   --user-id "admin-1" \
   --role "ADMIN" \
   --ttl "24h"
 ```
 
-### Использование токена
+### Token Usage
 
 ```bash
-# Сохранить токен
+# Save token
 export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-# Использовать в запросах
+# Use in requests
 curl -H "Authorization: Bearer $TOKEN" \
   http://localhost:3000/rides
 ```
 
-### Роли и доступ
+### Roles and Access
 
-| Роль | Доступ |
+| Role | Access |
 |------|--------|
-| **PASSENGER** | Ride Service (создание поездок, WebSocket) |
-| **DRIVER** | Driver Service (управление статусом, локацией, WebSocket) |
-| **ADMIN** | Admin Service (управление пользователями, аналитика) |
+| **PASSENGER** | Ride Service (ride creation, WebSocket) |
+| **DRIVER** | Driver Service (status/location management, WebSocket) |
+| **ADMIN** | Admin Service (user management, analytics) |
 
 ---
 
 ## 🔌 WebSocket
 
-### Ride Service WebSocket (Пассажиры)
+### Ride Service WebSocket (Passengers)
 
-**Подключение:**
+**Connection:**
 ```
 ws://localhost:3000/ws?token=YOUR_JWT_TOKEN
 ```
 
-**Входящие сообщения (от сервера):**
+**Incoming messages (from server):**
 
 1. **Ride Status Update**
 ```json
@@ -677,14 +675,14 @@ ws://localhost:3000/ws?token=YOUR_JWT_TOKEN
 }
 ```
 
-### Driver Service WebSocket (Водители)
+### Driver Service WebSocket (Drivers)
 
-**Подключение:**
+**Connection:**
 ```
 ws://localhost:3001/ws?token=YOUR_DRIVER_JWT_TOKEN
 ```
 
-**Входящие сообщения (от сервера):**
+**Incoming messages (from server):**
 
 1. **Ride Offer**
 ```json
@@ -706,7 +704,7 @@ ws://localhost:3001/ws?token=YOUR_DRIVER_JWT_TOKEN
 }
 ```
 
-**Исходящие сообщения (от клиента):**
+**Outgoing messages (from client):**
 
 1. **Accept Ride**
 ```json
@@ -733,19 +731,19 @@ ws://localhost:3001/ws?token=YOUR_DRIVER_JWT_TOKEN
 }
 ```
 
-### Тестирование WebSocket
+### WebSocket Testing
 
 ```bash
-# Автоматический тест
+# Automatic test
 ./scripts/test-websocket.sh
 
-# Ручное тестирование с websocat
-# Установка: cargo install websocat
+# Manual testing with websocat
+# Installation: cargo install websocat
 
-# Пассажир
+# Passenger
 websocat "ws://localhost:3000/ws?token=$PASSENGER_TOKEN"
 
-# Водитель
+# Driver
 websocat "ws://localhost:3001/ws?token=$DRIVER_TOKEN"
 ```
 
@@ -753,7 +751,7 @@ websocat "ws://localhost:3001/ws?token=$DRIVER_TOKEN"
 
 ## 📨 RabbitMQ
 
-### Топология
+### Topology
 
 ```
 Exchanges:
@@ -767,10 +765,10 @@ Exchanges:
 │
 └─ location_fanout (fanout)
    ├─ Queue: ride_service_locations
-   └─ Queue: driver_service_locations (опционально)
+   └─ Queue: driver_service_locations (optional)
 ```
 
-### Потоки сообщений
+### Message Flows
 
 #### 1. Ride Request Flow
 ```
@@ -815,33 +813,33 @@ location_fanout (broadcast)
 │  Ride Service Consumer
 │  ↓
 │  WebSocket → Passenger
-└─ (другие подписчики)
+└─ (other subscribers)
 ```
 
-### Проверка RabbitMQ
+### RabbitMQ Verification
 
 ```bash
-# Открыть Management UI
+# Open Management UI
 # http://localhost:15672 (guest/guest)
 
-# Проверить exchanges
+# Check exchanges
 curl -u guest:guest http://localhost:15672/api/exchanges
 
-# Проверить queues
+# Check queues
 curl -u guest:guest http://localhost:15672/api/queues
 
-# Проверить bindings
+# Check bindings
 curl -u guest:guest http://localhost:15672/api/bindings
 ```
 
 ---
 
-## 🗄️ База данных
+## 🗄️ Database
 
 ### Schema Overview
 
 ```sql
--- Users (все типы: PASSENGER, DRIVER, ADMIN)
+-- Users (all types: PASSENGER, DRIVER, ADMIN)
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -893,7 +891,7 @@ ON driver_coordinates USING GIST (location);
 
 ### PostGIS Query Examples
 
-#### 1. Найти водителей в радиусе 5 км
+#### 1. Find drivers within 5km radius
 
 ```sql
 SELECT 
@@ -924,13 +922,13 @@ ORDER BY distance_meters ASC
 LIMIT 10;
 ```
 
-**Что происходит:**
-- `ST_DWithin` - быстрая проверка попадания в радиус (использует spatial index)
-- `ST_Distance` - точное вычисление расстояния для сортировки
-- `LATERAL JOIN` - получение последней координаты для каждого водителя
-- `GEOGRAPHY` - автоматический учет кривизны Земли
+**What happens:**
+- `ST_DWithin` - fast radius check (uses spatial index)
+- `ST_Distance` - precise distance calculation for sorting
+- `LATERAL JOIN` - getting the latest coordinate for each driver
+- `GEOGRAPHY` - automatic Earth curvature accounting
 
-#### 2. История поездок с расстоянием
+#### 2. Ride history with distance
 
 ```sql
 SELECT 
@@ -949,7 +947,7 @@ ORDER BY r.created_at DESC
 LIMIT 10;
 ```
 
-#### 3. Активные водители на карте (GeoJSON)
+#### 3. Active drivers on map (GeoJSON)
 
 ```sql
 SELECT jsonb_build_object(
@@ -981,13 +979,13 @@ WHERE d.is_online = true;
 ### Database Maintenance
 
 ```bash
-# Подключение к PostgreSQL
+# Connect to PostgreSQL
 docker exec -it ride-postgres psql -U postgres -d ridehail
 
-# Проверка расширений
+# Check extensions
 SELECT * FROM pg_extension WHERE extname IN ('uuid-ossp', 'postgis');
 
-# Статистика таблиц
+# Table statistics
 SELECT 
     schemaname,
     tablename,
@@ -996,14 +994,14 @@ SELECT
 FROM pg_stat_user_tables
 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
-# Проверка spatial index
+# Check spatial index
 SELECT 
     indexname, 
     indexdef 
 FROM pg_indexes 
 WHERE tablename = 'driver_coordinates';
 
-# Анализ производительности GIST index
+# Analyze GIST index performance
 EXPLAIN ANALYZE
 SELECT *
 FROM driver_coordinates
@@ -1016,7 +1014,7 @@ WHERE ST_DWithin(
 
 ---
 
-## 🧪 Тестирование
+## 🧪 Testing
 
 ### 1. Infrastructure Tests
 
@@ -1048,7 +1046,7 @@ curl http://localhost:3004/health  # Admin Service
 ### 3. Unit Tests
 
 ```bash
-# Запуск всех тестов
+# Run all tests
 go test ./... -v
 
 # Тесты с покрытием
@@ -1081,16 +1079,16 @@ bash -x ./scripts/test-e2e-ride-flow.sh
 
 ### 5. Manual Testing Workflow
 
-#### Шаг 1: Создать пользователей
+#### Step 1: Create Users
 
 ```bash
-# Генерация admin токена
+# Generate admin token
 ADMIN_TOKEN=$(go run cmd/generate-jwt/main.go \
   --user-id "admin-1" \
   --role "ADMIN" \
   --ttl "24h" | grep "JWT:" | cut -d' ' -f2)
 
-# Создать пассажира
+# Create passenger
 curl -X POST http://localhost:3004/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
@@ -1101,7 +1099,7 @@ curl -X POST http://localhost:3004/admin/users \
     "phone": "+79991234567"
   }'
 
-# Создать водителя
+# Create driver
 curl -X POST http://localhost:3004/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
@@ -1113,20 +1111,20 @@ curl -X POST http://localhost:3004/admin/users \
   }'
 ```
 
-#### Шаг 2: Водитель выходит онлайн
+#### Step 2: Driver Goes Online
 
 ```bash
-# Генерация driver токена
+# Generate driver token
 DRIVER_TOKEN=$(go run cmd/generate-jwt/main.go \
   --user-id "driver-test-456" \
   --role "DRIVER" \
   --ttl "24h" | grep "JWT:" | cut -d' ' -f2)
 
-# Выход онлайн
+# Go online
 curl -X POST http://localhost:3001/drivers/driver-test-456/online \
   -H "Authorization: Bearer $DRIVER_TOKEN"
 
-# Обновление локации (Москва, центр)
+# Update location (Moscow, center)
 curl -X POST http://localhost:3001/drivers/driver-test-456/location \
   -H "Authorization: Bearer $DRIVER_TOKEN" \
   -H "Content-Type: application/json" \
@@ -1139,16 +1137,16 @@ curl -X POST http://localhost:3001/drivers/driver-test-456/location \
   }'
 ```
 
-#### Шаг 3: Пассажир создает поездку
+#### Step 3: Passenger Creates Ride
 
 ```bash
-# Генерация passenger токена
+# Generate passenger token
 PASSENGER_TOKEN=$(go run cmd/generate-jwt/main.go \
   --user-id "passenger-test-123" \
   --role "PASSENGER" \
   --ttl "24h" | grep "JWT:" | cut -d' ' -f2)
 
-# Создание поездки
+# Create ride
 RIDE_RESPONSE=$(curl -X POST http://localhost:3000/rides \
   -H "Authorization: Bearer $PASSENGER_TOKEN" \
   -H "Content-Type: application/json" \
@@ -1167,33 +1165,33 @@ echo $RIDE_RESPONSE | jq
 RIDE_ID=$(echo $RIDE_RESPONSE | jq -r '.ride_id')
 ```
 
-#### Шаг 4: Проверка RabbitMQ
+#### Step 4: Check RabbitMQ
 
 ```bash
-# Проверить сообщения в очереди driver_matching
+# Check messages in driver_matching queue
 curl -u guest:guest \
   "http://localhost:15672/api/queues/%2F/driver_matching" | jq
 
-# Получить сообщение (non-destructive peek)
+# Get message (non-destructive peek)
 curl -u guest:guest \
   -X POST "http://localhost:15672/api/queues/%2F/driver_matching/get" \
   -H "Content-Type: application/json" \
   -d '{"count":1,"ackmode":"ack_requeue_true","encoding":"auto"}' | jq
 ```
 
-#### Шаг 5: WebSocket тестирование
+#### Step 5: WebSocket Testing
 
 ```bash
-# Установить websocat (если нет)
+# Install websocat (if not installed)
 # cargo install websocat
 
-# Подключиться как водитель
+# Connect as driver
 websocat "ws://localhost:3001/ws?token=$DRIVER_TOKEN"
 
-# В другом терминале - подключиться как пассажир
+# In another terminal - connect as passenger
 websocat "ws://localhost:3000/ws?token=$PASSENGER_TOKEN"
 
-# Создать поездку и наблюдать за событиями в обоих WebSocket
+# Create ride and observe events in both WebSockets
 ```
 
 ### 6. Performance Testing
@@ -1260,7 +1258,7 @@ export default function () {
 ```
 
 ```bash
-# Запуск k6
+# Run k6
 k6 run load-test.js
 ```
 
@@ -1314,23 +1312,23 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
   -o bin/ridehail-linux-amd64 \
   ./main.go
 
-# Размер бинарника
+# Binary size
 ls -lh bin/ridehail-linux-amd64
 
-# Upx compression (опционально)
+# Upx compression (optional)
 upx --best --lzma bin/ridehail-linux-amd64
 ```
 
 ### Docker Build
 
 ```bash
-# Build образа
+# Build image
 docker build -f deployments/Dockerfile -t ridehail:latest .
 
-# Проверка размера
+# Check size
 docker images ridehail:latest
 
-# Запуск контейнера
+# Run container
 docker run -d \
   --name ridehail-app \
   -p 3000:3000 \
@@ -1388,38 +1386,38 @@ SELECT * FROM rides ORDER BY created_at DESC LIMIT 5;
 ## 🐰 RabbitMQ
 
 ```bash
-# Открыть Management UI
+# Open Management UI
 # http://localhost:15672
 # Login: guest / guest
 
-# Проверить очереди
+# Check queues
 # Exchanges: ride_topic, driver_topic, location_fanout
 # Queues: ride.requested, ride.matched, ride.completed, etc.
 ```
 
-## 🛠️ Полезные команды
+## 🛠️ Useful Commands
 
 ```bash
-# Показать все доступные команды
+# Show all available commands
 make help
 
-# Запустить тесты
+# Run tests
 make test
 
-# Линтер
+# Linter
 make lint
 
-# Очистить артефакты
+# Clean artifacts
 make clean
 
-# Пересобрать Docker образы
+# Rebuild Docker images
 make docker-build
 
-# Перезапустить сервисы
+# Restart services
 make docker-restart
 ```
 
-## 📝 Структура проекта
+## 📝 Project Structure
 
 ```
 ride-hail/
@@ -1454,9 +1452,9 @@ ride-hail/
 └── README.md
 ```
 
-## 🧪 Тестирование
+## 🧪 Testing
 
-### Unit тесты
+### Unit Tests
 
 ```bash
 make test
@@ -1464,35 +1462,35 @@ make test
 
 ### Driver Service Testing ⭐
 
-Полная документация: [TESTING_GUIDE.md](TESTING_GUIDE.md)
+Full documentation: [TESTING_GUIDE.md](TESTING_GUIDE.md)
 
 ```bash
-# 1. Создать тестового водителя
+# 1. Create test driver
 ./scripts/setup-test-driver.sh
 
-# 2. Запустить полное тестирование (8 тестов)
+# 2. Run full testing (8 tests)
 export DRIVER_ID="your-driver-id"
 ./scripts/test-driver-api.sh
 ```
 
-Доступные скрипты:
-- `setup-test-driver.sh` - создание тестового водителя
-- `generate-driver-token.sh` - генерация JWT токена
-- `test-driver-api.sh` - автоматическое тестирование API (8 тестов)
-- `test-driver-workflow.sh` - полный workflow водителя
-- `driver-api-helpers.sh` - интерактивные функции
+Available scripts:
+- `setup-test-driver.sh` - create test driver
+- `generate-driver-token.sh` - generate JWT token
+- `test-driver-api.sh` - automatic API testing (8 tests)
+- `test-driver-workflow.sh` - complete driver workflow
+- `driver-api-helpers.sh` - interactive functions
 
-### Интеграционные тесты
+### Integration Tests
 
 ```bash
-# Запустить сервисы
+# Start services
 make docker-up
 
-# Выполнить тесты
+# Run tests
 ./scripts/integration-test.sh
 ```
 
-## 📊 Мониторинг
+## 📊 Monitoring
 
 ### Metrics Endpoints
 
@@ -1540,23 +1538,23 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
   -o bin/ridehail-linux-amd64 \
   ./main.go
 
-# Размер бинарника
+# Binary size
 ls -lh bin/ridehail-linux-amd64
 
-# Upx compression (опционально)
+# Upx compression (optional)
 upx --best --lzma bin/ridehail-linux-amd64
 ```
 
 ### Docker Build
 
 ```bash
-# Build образа
+# Build image
 docker build -f deployments/Dockerfile -t ridehail:latest .
 
-# Проверка размера
+# Check size
 docker images ridehail:latest
 
-# Запуск контейнера
+# Run container
 docker run -d \
   --name ridehail-app \
   -p 3000:3000 \
@@ -1638,7 +1636,7 @@ export LOG_LEVEL=info  # debug, info, warn, error
 ```bash
 # Примеры использования в директории scripts/
 ./scripts/test-e2e-ride-flow.sh      # E2E тест полного flow
-./scripts/test-admin-api.sh           # Тестирование Admin API
+./scripts/test-admin-api.sh           # Testing Admin API
 ./scripts/generate-admin-token.sh     # Генерация admin токена
 ```
 
@@ -1666,15 +1664,15 @@ internal/
 │  └─ bootstrap/       # Dependency injection
 ```
 
-**Принципы:**
-- ✅ **Dependency Inversion** - domain не зависит от внешних библиотек
-- ✅ **Ports & Adapters** - четкие границы между слоями
-- ✅ **Use Cases** - бизнес-логика изолирована
-- ✅ **Testability** - легко мокать зависимости
+**Principles:**
+- ✅ **Dependency Inversion** - domain doesn't depend on external libraries
+- ✅ **Ports & Adapters** - clear boundaries between layers
+- ✅ **Use Cases** - business logic is isolated
+- ✅ **Testability** - easy to mock dependencies
 
 ### Event-Driven Architecture
 
-**Асинхронная коммуникация через RabbitMQ:**
+**Asynchronous communication via RabbitMQ:**
 
 1. **Topic Exchange** - маршрутизация по routing key
    - `ride_topic`: `ride.request.*`
@@ -1685,17 +1683,17 @@ internal/
 
 3. **Dead Letter Queues** - обработка ошибок
    - Retry механизм с экспоненциальной задержкой
-   - Мониторинг failed messages
+   - Monitoring failed messages
 
-**Преимущества:**
-- 🔄 **Loose Coupling** - сервисы независимы
-- 📈 **Scalability** - горизонтальное масштабирование
-- 🛡️ **Resilience** - отказоустойчивость через очереди
-- 📊 **Auditability** - все события логируются
+**Advantages:**
+- 🔄 **Loose Coupling** - services are independent
+- 📈 **Scalability** - horizontal scaling
+- 🛡️ **Resilience** - fault tolerance through queues
+- 📊 **Auditability** - all events are logged
 
 ### Geospatial Architecture (PostGIS)
 
-**Оптимизация запросов:**
+**Query optimization:**
 
 ```sql
 -- 1. Spatial Index (GIST)
@@ -1703,10 +1701,10 @@ CREATE INDEX idx_driver_coordinates_location
 ON driver_coordinates USING GIST (location);
 
 -- 2. Two-step query optimization
--- Шаг 1: ST_DWithin (быстрая фильтрация по индексу)
--- Шаг 2: ST_Distance (точное расстояние для топ-N)
+-- Step 1: ST_DWithin (fast filtering by index)
+-- Step 2: ST_Distance (precise distance for top-N)
 
--- 3. LATERAL JOIN для latest location
+-- 3. LATERAL JOIN for latest location
 SELECT d.*, dc.location
 FROM drivers d
 INNER JOIN LATERAL (
@@ -1731,100 +1729,100 @@ INNER JOIN LATERAL (
 
 #### 1. RabbitMQ Connection Failed
 
-**Симптомы:**
+**Symptoms:**
 ```
 Failed to connect to RabbitMQ: dial tcp: connection refused
 ```
 
-**Решение:**
+**Solution:**
 ```bash
-# Проверить статус
+# Check status
 docker-compose -f deployments/docker-compose.yml ps
 
 # Перезапустить RabbitMQ
 docker-compose -f deployments/docker-compose.yml restart ride-rabbitmq
 
-# Проверить логи
+# Check logs
 docker-compose -f deployments/docker-compose.yml logs ride-rabbitmq
 
-# Проверить порты
+# Check ports
 netstat -tlnp | grep 5672
 ```
 
 #### 2. PostgreSQL Connection Failed
 
-**Симптомы:**
+**Symptoms:**
 ```
 Error connecting to database: connection refused
 ```
 
-**Решение:**
+**Solution:**
 ```bash
-# Проверить статус
+# Check status
 docker exec ride-postgres pg_isready -U postgres
 
-# Проверить соединение
+# Check connection
 docker exec -it ride-postgres psql -U postgres -d ridehail -c "\conninfo"
 
-# Пересоздать БД (ОСТОРОЖНО!)
+# Recreate DB (CAUTION!)
 docker-compose -f deployments/docker-compose.yml down -v
 docker-compose -f deployments/docker-compose.yml up -d
 ```
 
 #### 3. PostGIS Extension Missing
 
-**Симптомы:**
+**Symptoms:**
 ```
 ERROR: type "geography" does not exist
 ```
 
-**Решение:**
+**Solution:**
 ```bash
 docker exec -it ride-postgres psql -U postgres -d ridehail \
   -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
-# Проверить
+# Verify
 docker exec -it ride-postgres psql -U postgres -d ridehail \
   -c "SELECT PostGIS_Version();"
 ```
 
 #### 4. JWT Token Invalid
 
-**Симптомы:**
+**Symptoms:**
 ```json
 {"error": "unauthorized", "message": "invalid token"}
 ```
 
-**Решение:**
+**Solution:**
 ```bash
-# Проверить секрет в config/jwt.yaml
+# Check secret in config/jwt.yaml
 cat config/jwt.yaml
 
-# Сгенерировать новый токен
+# Generate new token
 go run cmd/generate-jwt/main.go \
   --user-id "test-123" \
   --role "PASSENGER" \
   --ttl "24h"
 
-# Проверить токен
+# Verify token
 go run cmd/verify-jwt/main.go --token "YOUR_TOKEN"
 ```
 
 #### 5. WebSocket Connection Failed
 
-**Симптомы:**
+**Symptoms:**
 ```
 WebSocket handshake failed: 401 Unauthorized
 ```
 
-**Решение:**
+**Solution:**
 ```bash
-# Проверить токен в URL
+# Check token in URL
 ws://localhost:3000/ws?token=YOUR_JWT_TOKEN
 
-# Проверить роль (PASSENGER для /rides, DRIVER для /drivers)
+# Check role (PASSENGER for /rides, DRIVER for /drivers)
 
-# Тест подключения с curl
+# Test connection with curl
 curl -i -N \
   -H "Connection: Upgrade" \
   -H "Upgrade: websocket" \
@@ -1835,30 +1833,30 @@ curl -i -N \
 
 #### 6. Driver Matching Not Working
 
-**Симптомы:**
-- Ride создается, но водитель не получает уведомление
+**Symptoms:**
+- Ride is created, but driver doesn't receive notification
 
-**Диагностика:**
+**Diagnostics:**
 ```bash
-# 1. Проверить, что водитель онлайн
+# 1. Check that driver is online
 docker exec -it ride-postgres psql -U postgres -d ridehail \
   -c "SELECT id, is_online, status FROM drivers;"
 
-# 2. Проверить локацию водителя
+# 2. Check driver location
 docker exec -it ride-postgres psql -U postgres -d ridehail \
   -c "SELECT driver_id, ST_AsText(location), recorded_at 
       FROM driver_coordinates 
       ORDER BY recorded_at DESC 
       LIMIT 5;"
 
-# 3. Проверить очередь driver_matching
+# 3. Check driver_matching queue
 curl -u guest:guest \
   http://localhost:15672/api/queues/%2F/driver_matching | jq
 
-# 4. Проверить логи Driver Service
+# 4. Check Driver Service logs
 docker-compose -f deployments/docker-compose.yml logs driver-service
 
-# 5. Тест PostGIS query вручную
+# 5. Test PostGIS query manually
 docker exec -it ride-postgres psql -U postgres -d ridehail \
   -c "SELECT d.id, 
       ST_Distance(
@@ -1882,13 +1880,13 @@ docker exec -it ride-postgres psql -U postgres -d ridehail \
 
 #### 7. High Memory Usage
 
-**Решение:**
+**Solution:**
 ```bash
-# Проверить использование памяти
+# Check memory usage
 docker stats
 
-# Ограничить память для контейнеров
-# В docker-compose.yml добавить:
+# Limit memory for containers
+# In docker-compose.yml add:
 services:
   ride-postgres:
     deploy:
@@ -1898,40 +1896,40 @@ services:
         reservations:
           memory: 256M
 
-# Очистить неиспользуемые образы
+# Clean unused images
 docker system prune -a
 ```
 
 #### 8. Docker Buildx Error
 
-Если получаете ошибку `fork/exec .../docker-buildx: no such file or directory`:
+If you get error `fork/exec .../docker-buildx: no such file or directory`:
 
 ```bash
-# Используйте обычный docker build вместо buildx
+# Use regular docker build instead of buildx
 docker build -f deployments/Dockerfile -t ride-hail .
 ```
 
-#### 9. Порты заняты
+#### 9. Ports Busy
 
 ```bash
-# Проверить занятые порты
+# Check occupied ports
 sudo lsof -i :3000
 sudo lsof -i :5432
 
-# Убить процесс на порту
+# Kill process on port
 sudo kill -9 $(sudo lsof -t -i:3000)
 
-# Изменить порты в docker-compose.yml
+# Change ports in docker-compose.yml
 ```
 
-#### 10. Проблемы с миграциями
+#### 10. Migration Issues
 
 ```bash
-# Пересоздать БД (удалит все данные!)
+# Recreate DB (deletes all data!)
 docker-compose -f deployments/docker-compose.yml down -v
 docker-compose -f deployments/docker-compose.yml up -d
 
-# Или вручную
+# Or manually
 docker exec -it ride-postgres psql -U postgres -c "DROP DATABASE IF EXISTS ridehail;"
 docker exec -it ride-postgres psql -U postgres -c "CREATE DATABASE ridehail;"
 ```
@@ -1939,14 +1937,14 @@ docker exec -it ride-postgres psql -U postgres -c "CREATE DATABASE ridehail;"
 ### Debug Mode
 
 ```bash
-# Запуск с debug логами
+# Run with debug logs
 export LOG_LEVEL=debug
 go run main.go
 
-# Трассировка SQL запросов (PostgreSQL)
+# Trace SQL queries (PostgreSQL)
 export DB_LOG_LEVEL=debug
 
-# Трассировка RabbitMQ сообщений
+# Trace RabbitMQ messages
 export RABBITMQ_LOG_LEVEL=debug
 ```
 
@@ -1962,9 +1960,9 @@ export RABBITMQ_LOG_LEVEL=debug
    git checkout -b feature/amazing-feature
    ```
 3. **Make changes**
-   - Следовать Clean Architecture
-   - Добавить unit tests
-   - Обновить документацию
+   - Follow Clean Architecture
+   - Add unit tests
+   - Update documentation
 4. **Run tests**
    ```bash
    go test ./... -v
@@ -2032,17 +2030,17 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ### Issues
 
-Если вы обнаружили баг или хотите предложить улучшение:
-1. Проверьте [Troubleshooting](#-troubleshooting)
-2. Откройте issue на GitHub
-3. Опишите проблему с примерами
+If you found a bug or want to suggest an improvement:
+1. Check [Troubleshooting](#-troubleshooting)
+2. Open an issue on GitHub
+3. Describe the problem with examples
 
 ### Questions
 
-Для вопросов по проекту:
-- Создайте discussion на GitHub
-- Укажите версию Go, PostgreSQL, RabbitMQ
-- Приложите логи и конфигурацию
+For questions about the project:
+- Create a discussion on GitHub
+- Specify version of Go, PostgreSQL, RabbitMQ
+- Attach logs and configuration
 
 ---
 
